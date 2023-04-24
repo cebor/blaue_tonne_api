@@ -6,7 +6,7 @@ def __parse_dates(df):
     for col in df:
         try:
             value = df[col].values[0]
-            yield parse(value[3:], dayfirst=True)
+            yield parse(value[3:], dayfirst=True).isoformat(timespec='microseconds')
         except ParserError:
             pass
 
