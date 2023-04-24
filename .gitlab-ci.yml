@@ -33,7 +33,7 @@ deploy:
     on_stop: undeploy
   when: manual
   only:
-    - master
+    - main
 
 undeploy:
   stage: deploy
@@ -55,4 +55,4 @@ undeploy:
     action: stop
   when: manual
   only:
-    - master
+    - main
