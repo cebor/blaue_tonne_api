@@ -1,0 +1,5 @@
+fastapi
+uvicorn[standard]
+camelot-py[cv]
+PyPDF2<3.0
+python-dateutil
