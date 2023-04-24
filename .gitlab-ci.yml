@@ -1,0 +1,58 @@
+build:
+  image: docker:latest
+  stage: build
+  services:
+    - docker:dind
+  variables:
+    IMAGE_TAG: $CI_REGISTRY_IMAGE:latest
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $IMAGE_TAG .
+    - docker push $IMAGE_TAG
+  tags:
+    - dind
+
+deploy:
+  stage: deploy
+  image: ubuntu
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | base64 -d | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    - ssh "$SSH_USER"@"$SSH_SERVER" "docker stop blaue_tonne_api || echo \"stop faild!\""
+    - ssh "$SSH_USER"@"$SSH_SERVER" "docker rm blaue_tonne_api || echo \"rm faild!\""
+    - ssh "$SSH_USER"@"$SSH_SERVER" "docker pull $CI_REGISTRY_IMAGE:latest"
+    - ssh "$SSH_USER"@"$SSH_SERVER" "docker run --name blaue_tonne_api -d --restart always -p 8245:80 $CI_REGISTRY_IMAGE:latest"
+  environment:
+    name: production
+    on_stop: undeploy
+  when: manual
+  only:
+    - master
+
+undeploy:
+  stage: deploy
+  image: ubuntu
+  variables:
+    GIT_STRATEGY: none
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | base64 -d | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    - ssh "$SSH_USER"@"$SSH_SERVER" "docker stop blaue_tonne_api && docker rm blaue_tonne_api"
+  environment:
+    name: production
+    action: stop
+  when: manual
+  only:
+    - master
