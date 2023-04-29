@@ -2,6 +2,10 @@ import camelot
 from dateutil.parser import ParserError, parse
 
 
+class DistrictNotFoundException(Exception):
+    pass
+
+
 def __parse_dates(df):
     for col in df:
         try:
@@ -20,6 +24,8 @@ def get_dates(url: str, pages: str, district):
             yield from __parse_dates(tables[n].df.loc[index - 1])
             yield from __parse_dates(tables[n].df.loc[index + 1])
             break
+    else:
+        raise DistrictNotFoundException
 
 
 if __name__ == "__main__":

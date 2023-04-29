@@ -1,5 +1,6 @@
-from fastapi import FastAPI
-from app.blaue_tonne import get_dates
+from fastapi import FastAPI, HTTPException
+
+from app.blaue_tonne import DistrictNotFoundException, get_dates
 
 app = FastAPI()
 
@@ -16,5 +17,11 @@ async def blaue_tonne_dates(district):
     if district in cache["lk_rosenheim"]:
         return cache["lk_rosenheim"][district]
 
-    cache["lk_rosenheim"][district] = list(get_dates(URL, PAGES, district))
+    try:
+        cache["lk_rosenheim"][district] = list(get_dates(URL, PAGES, district))
+    except DistrictNotFoundException:
+        raise HTTPException(status_code=404, detail="District not found")
+    except:
+        raise
+
     return cache["lk_rosenheim"][district]
