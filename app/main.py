@@ -10,7 +10,7 @@ cache = {
 
 
 @app.get("/lk_rosenheim")
-async def blaue_tonne_dates(district):
+async def blaue_tonne_dates(district) -> list[str]:
     URL = "https://chiemgau-recycling.de/wp-content/uploads/2022/11/Abfuhrplan_LK_Rosenheim_2023.pdf"
     PAGES = "1,2"
 
