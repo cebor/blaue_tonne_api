@@ -21,7 +21,5 @@ async def blaue_tonne_dates(district):
         cache["lk_rosenheim"][district] = list(get_dates(URL, PAGES, district))
     except DistrictNotFoundException:
         raise HTTPException(status_code=404, detail="District not found")
-    except:
-        raise
 
     return cache["lk_rosenheim"][district]
