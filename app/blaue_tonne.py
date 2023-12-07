@@ -29,11 +29,13 @@ def get_dates(url: str, pages: str, district):
 
 
 if __name__ == "__main__":
-    URL = "https://chiemgau-recycling.de/wp-content/uploads/2022/11/Abfuhrplan_LK_Rosenheim_2023.pdf"
-    PAGES = "1,2"
-    DISTRICT = "Bruckmühl 1"
+    PLANS = [
+        {url: "https://chiemgau-recycling.de/wp-content/uploads/2022/11/Abfuhrplan_LK_Rosenheim_2023.pdf", pages: "1,2"},
+        {url: "https://chiemgau-recycling.de/wp-content/uploads/2023/11/Abfuhrplan_LK_Rosenheim_2024.pdf", pages: "1,2"},
+    ]
+    DISTRICT = "Bruckmühl 2"
 
-    dates = get_dates(URL, PAGES, DISTRICT)
-
-    for date in dates:
-        print(date)
+    for plan in PLANS:
+        dates = get_dates(plan["url"], plan["pages"], DISTRICT)    
+        for date in dates:
+            print(date)
