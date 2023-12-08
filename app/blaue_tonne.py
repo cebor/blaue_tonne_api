@@ -1,3 +1,4 @@
+from urllib.error import HTTPError
 import camelot
 from dateutil.parser import ParserError, parse
 
@@ -16,7 +17,13 @@ def __parse_dates(df):
 
 
 def get_dates(url: str, pages: str, district):
-    tables = camelot.read_pdf(url, flavor="stream", pages=pages)
+    try:
+        tables = camelot.read_pdf(url, flavor="stream", pages=pages)
+    except HTTPError as err:
+        if err.code == 404:
+            return
+        else:
+            raise
 
     for n in range(tables.n):
         index = tables[n].df.loc[tables[n].df[0] == district].index
@@ -30,12 +37,12 @@ def get_dates(url: str, pages: str, district):
 
 if __name__ == "__main__":
     PLANS = [
-        {url: "https://chiemgau-recycling.de/wp-content/uploads/2022/11/Abfuhrplan_LK_Rosenheim_2023.pdf", pages: "1,2"},
-        {url: "https://chiemgau-recycling.de/wp-content/uploads/2023/11/Abfuhrplan_LK_Rosenheim_2024.pdf", pages: "1,2"},
+        {"url": "https://chiemgau-recycling.de/wp-content/uploads/2022/11/Abfuhrplan_LK_Rosenheim_2023.pdf", "pages": "1,2"},
+        {"url": "https://chiemgau-recycling.de/wp-content/uploads/2023/11/Abfuhrplan_LK_Rosenheim_2024.pdf", "pages": "1,2"},
     ]
     DISTRICT = "Bruckmühl 2"
 
     for plan in PLANS:
-        dates = get_dates(plan["url"], plan["pages"], DISTRICT)    
+        dates = get_dates(plan["url"], plan["pages"], DISTRICT)
         for date in dates:
             print(date)
