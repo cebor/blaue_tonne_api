@@ -3,6 +3,9 @@ import camelot
 from dateutil.parser import ParserError, parse
 
 
+DATE_LENGTH = 8
+
+
 class DistrictNotFoundException(Exception):
     pass
 
@@ -11,10 +14,11 @@ def __parse_dates(df):
     for col in df:
         try:
             value = df[col].values[0]
-            if len(value) < 8:
+            if len(value) < DATE_LENGTH:
                 continue
-            if len(value) == 11:
-                yield parse(value[3:], dayfirst=True).isoformat()
+            if len(value) > DATE_LENGTH:
+                over_length = len(value) - DATE_LENGTH
+                yield parse(value[over_length:], dayfirst=True).isoformat()
             else:
                 yield parse(value, dayfirst=True).isoformat()
         except ParserError:
@@ -43,7 +47,7 @@ def get_dates(url: str, pages: str, district):
 if __name__ == "__main__":
     PLANS = [
         # {"url": "https://chiemgau-recycling.de/wp-content/uploads/2022/11/Abfuhrplan_LK_Rosenheim_2023.pdf", "pages": "1,2"},
-        # {"url": "https://chiemgau-recycling.de/wp-content/uploads/2023/11/Abfuhrplan_LK_Rosenheim_2024.pdf", "pages": "1,2"},
+        {"url": "https://chiemgau-recycling.de/wp-content/uploads/2023/11/Abfuhrplan_LK_Rosenheim_2024.pdf", "pages": "1,2"},
         {"url": "https://chiemgau-recycling.de/wp-content/uploads/2025/01/Abfuhrplan_LK_Rosenheim_2025.pdf", "pages": "1,2"},
     ]
     DISTRICT = "Bruckmühl 2"
