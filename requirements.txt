@@ -1,5 +1,4 @@
 fastapi
 uvicorn[standard]
-camelot-py[cv]
-PyPDF2<3.0
+camelot-py[base]
 python-dateutil
