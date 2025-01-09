@@ -4,7 +4,7 @@ WORKDIR /code
 
 COPY ./requirements.txt /code/requirements.txt
 
-RUN apt update && apt install -y libgl1-mesa-glx && apt clean
+#RUN apt update && apt install -y libgl1-mesa-glx && apt clean
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 COPY ./app /code/app
