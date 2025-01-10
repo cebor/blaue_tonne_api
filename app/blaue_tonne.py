@@ -3,6 +3,7 @@ import camelot
 from dateutil.parser import ParserError, parse
 
 
+# Length of the date string in the format 'dd.mm.yy'
 DATE_LENGTH = 8
 
 
