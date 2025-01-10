@@ -11,7 +11,7 @@ class DistrictNotFoundException(Exception):
     pass
 
 
-def __parse_dates(df):
+def _parse_dates(df):
     for col in df:
         try:
             value = df[col].values[0]
@@ -37,8 +37,8 @@ def get_dates(url: str, pages: str, district):
     for n in range(tables.n):
         index = tables[n].df.loc[tables[n].df[0] == district].index
         if not index.empty:
-            yield from __parse_dates(tables[n].df.loc[index - 1])
-            yield from __parse_dates(tables[n].df.loc[index + 1])
+            yield from _parse_dates(tables[n].df.loc[index - 1])
+            yield from _parse_dates(tables[n].df.loc[index + 1])
             break
     else:
         raise DistrictNotFoundException
