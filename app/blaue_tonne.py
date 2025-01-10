@@ -1,5 +1,5 @@
 from urllib.error import HTTPError
-from camelot.io import read_pdf
+from camelot import read_pdf
 from dateutil.parser import ParserError, parse
 
 
