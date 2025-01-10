@@ -1,5 +1,5 @@
 from urllib.error import HTTPError
-import camelot
+from camelot.io import read_pdf
 from dateutil.parser import ParserError, parse
 
 
@@ -15,7 +15,7 @@ def _parse_dates(df):
     for col in df:
         try:
             value = df[col].values[0]
-            if len(value) < DATE_LENGTH:
+            if not isinstance(value, str) or len(value) < DATE_LENGTH:
                 continue
             # rm preceding day names
             if len(value) > DATE_LENGTH:
@@ -27,7 +27,7 @@ def _parse_dates(df):
 
 def get_dates(url: str, pages: str, district):
     try:
-        tables = camelot.read_pdf(url, flavor="stream", pages=pages)
+        tables = read_pdf(url, flavor="stream", pages=pages)
     except HTTPError as err:
         if err.code == 404:
             return
