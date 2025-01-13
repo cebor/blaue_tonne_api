@@ -1,3 +1,6 @@
+variables:
+  CS_IMAGE: $CI_REGISTRY_IMAGE:latest
+
 build:
   image: docker:latest
   stage: build
