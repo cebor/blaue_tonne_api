@@ -1,13 +1,12 @@
 variables:
-  CS_IMAGE: $CI_REGISTRY_IMAGE:latest
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:latest
+  CS_IMAGE: $IMAGE_TAG
 
 build:
   image: docker:latest
   stage: build
   services:
     - docker:dind
-  variables:
-    IMAGE_TAG: $CI_REGISTRY_IMAGE:latest
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t $IMAGE_TAG .
