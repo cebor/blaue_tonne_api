@@ -12,6 +12,9 @@ build:
   tags:
     - dind
 
+include:
+  - template: Jobs/SAST.gitlab-ci.yml
+
 deploy:
   stage: deploy
   image: ubuntu
