@@ -19,7 +19,7 @@ def _parse_dates(df):
                 continue
             # rm preceding day names
             if len(value) > DATE_LENGTH:
-                value = value[len(value) - DATE_LENGTH:]
+                value = value[-DATE_LENGTH:]
             yield parse(value, dayfirst=True).isoformat()
         except ParserError:
             pass
@@ -47,7 +47,7 @@ def get_dates(url: str, pages: str, district):
 if __name__ == "__main__":
     PLANS = [
         # {"url": "https://chiemgau-recycling.de/wp-content/uploads/2022/11/Abfuhrplan_LK_Rosenheim_2023.pdf", "pages": "1,2"},
-        {"url": "https://chiemgau-recycling.de/wp-content/uploads/2023/11/Abfuhrplan_LK_Rosenheim_2024.pdf", "pages": "1,2"},
+        # {"url": "https://chiemgau-recycling.de/wp-content/uploads/2023/11/Abfuhrplan_LK_Rosenheim_2024.pdf", "pages": "1,2"},
         {"url": "https://chiemgau-recycling.de/wp-content/uploads/2025/01/Abfuhrplan_LK_Rosenheim_2025.pdf", "pages": "1,2"},
     ]
     DISTRICT = "Bruckmühl 2"
