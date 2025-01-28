@@ -39,7 +39,7 @@ deploy:
     name: production
     on_stop: undeploy
   rules:
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
 
 undeploy:
@@ -62,5 +62,5 @@ undeploy:
     name: production
     action: stop
   rules:
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
