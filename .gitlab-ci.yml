@@ -38,9 +38,9 @@ deploy:
   environment:
     name: production
     on_stop: undeploy
-  when: manual
-  only:
-    - main
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+    - when: manual
 
 undeploy:
   stage: deploy
@@ -61,6 +61,6 @@ undeploy:
   environment:
     name: production
     action: stop
-  when: manual
-  only:
-    - main
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+    - when: manual
