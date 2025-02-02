@@ -1,6 +1,6 @@
 FROM python:3.13
 
-WORKDIR /code
+WORKDIR /src
 
 # Install dependencies
 RUN --mount=from=ghcr.io/astral-sh/uv,source=/uv,target=/bin/uv \
@@ -9,6 +9,6 @@ RUN --mount=from=ghcr.io/astral-sh/uv,source=/uv,target=/bin/uv \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync
 
-COPY ./app /code/app
+COPY ./app /src/app
 
-CMD ["/code/.venv/bin/uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80", "--proxy-headers", "--forwarded-allow-ips", "172.17.0.1"]
+CMD ["/src/.venv/bin/uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80", "--proxy-headers", "--forwarded-allow-ips", "172.17.0.1"]
