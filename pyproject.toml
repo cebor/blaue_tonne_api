@@ -9,3 +9,6 @@ dependencies = [
     "fastapi[standard]>=0.115.8",
     "python-dateutil>=2.9.0.post0",
 ]
+
+[tool.ruff]
+line-length = 120
