@@ -6,17 +6,24 @@ app = FastAPI()
 
 LANDKREIS = "lk_rosenheim"
 
-cache = {
-    LANDKREIS: {}
-}
+cache = {LANDKREIS: {}}
 
 
 @app.get("/" + LANDKREIS)
 async def blaue_tonne_dates(district: str) -> list[str]:
     PLANS = [
-        # {"url": "https://chiemgau-recycling.de/wp-content/uploads/2022/11/Abfuhrplan_LK_Rosenheim_2023.pdf", "pages": "1,2"},
-        # {"url": "https://chiemgau-recycling.de/wp-content/uploads/2023/11/Abfuhrplan_LK_Rosenheim_2024.pdf", "pages": "1,2"},
-        {"url": "https://chiemgau-recycling.de/wp-content/uploads/2025/01/Abfuhrplan_LK_Rosenheim_2025.pdf", "pages": "1,2"},
+        # {
+        #     "url": "https://chiemgau-recycling.de/wp-content/uploads/2022/11/Abfuhrplan_LK_Rosenheim_2023.pdf",
+        #     "pages": "1,2",
+        # },
+        # {
+        #     "url": "https://chiemgau-recycling.de/wp-content/uploads/2023/11/Abfuhrplan_LK_Rosenheim_2024.pdf",
+        #     "pages": "1,2",
+        # },
+        {
+            "url": "https://chiemgau-recycling.de/wp-content/uploads/2025/01/Abfuhrplan_LK_Rosenheim_2025.pdf",
+            "pages": "1,2",
+        },
     ]
 
     if district in cache[LANDKREIS]:
