@@ -1,3 +1,9 @@
+stages:
+  - build
+  - test
+  - deploy
+  - validate
+
 variables:
   IMAGE_TAG: $CI_REGISTRY_IMAGE:latest
   CS_IMAGE: $IMAGE_TAG
@@ -65,3 +71,11 @@ undeploy:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
   allow_failure: true
+
+validate_deployment:
+  stage: validate
+  image: curlimages/curl:latest
+  script:
+    - curl -L blauetonne.stkn.org/lk_rosenheim\?district="Bruckm%C3%BChl%202"
+  allow_failure: false
+  needs: ["deploy"]
