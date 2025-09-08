@@ -23,6 +23,7 @@ build:
 include:
   - template: Jobs/SAST.gitlab-ci.yml
   - template: Jobs/Container-Scanning.gitlab-ci.yml
+  - template: Jobs/SAST-IaC.gitlab-ci.yml
 
 deploy:
   stage: deploy
