@@ -24,6 +24,10 @@ include:
   - template: Jobs/SAST.gitlab-ci.yml
   - template: Jobs/Container-Scanning.gitlab-ci.yml
 
+container_scanning:
+  variables:
+    GIT_STRATEGY: fetch
+
 deploy:
   stage: deploy
   image: ubuntu
