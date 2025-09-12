@@ -11,4 +11,4 @@ RUN --mount=from=ghcr.io/astral-sh/uv,source=/uv,target=/bin/uv \
 
 COPY ./app /code/app
 
-CMD ["/code/.venv/bin/fastapi", "run", "--host", "0.0.0.0", "--port", "80", "--proxy-headers", "--forwarded-allow-ips", "172.17.0.1"]
+CMD ["/code/.venv/bin/fastapi", "run", "--port", "80", "--proxy-headers", "--forwarded-allow-ips", "172.17.0.1"]
