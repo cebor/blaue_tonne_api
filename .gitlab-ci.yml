@@ -8,6 +8,17 @@ variables:
   IMAGE_TAG: $CI_REGISTRY_IMAGE:latest
   CS_IMAGE: $IMAGE_TAG
 
+.deploy:
+  before_script:
+    - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - chmod 400 "$SSH_PRIVATE_KEY"
+    - ssh-add "$SSH_PRIVATE_KEY"
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - cp "$SSH_KNOWN_HOSTS" ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+
 build:
   image: docker:latest
   stage: build
@@ -27,16 +38,7 @@ include:
 
 deploy:
   stage: deploy
-  image: ubuntu
-  before_script:
-    - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
-    - eval $(ssh-agent -s)
-    - chmod 400 "$SSH_PRIVATE_KEY"
-    - ssh-add "$SSH_PRIVATE_KEY"
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - cp "$SSH_KNOWN_HOSTS" ~/.ssh/known_hosts
-    - chmod 644 ~/.ssh/known_hosts
+  extends: .deploy
   script:
     - ssh "$SSH_USER"@"$SSH_SERVER" "docker stop blaue_tonne_api || echo \"stop faild!\""
     - ssh "$SSH_USER"@"$SSH_SERVER" "docker rm blaue_tonne_api || echo \"rm faild!\""
@@ -51,18 +53,9 @@ deploy:
 
 undeploy:
   stage: deploy
-  image: ubuntu
+  extends: .deploy
   variables:
     GIT_STRATEGY: none
-  before_script:
-    - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
-    - eval $(ssh-agent -s)
-    - chmod 400 "$SSH_PRIVATE_KEY"
-    - ssh-add "$SSH_PRIVATE_KEY"
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - cp "$SSH_KNOWN_HOSTS" ~/.ssh/known_hosts
-    - chmod 644 ~/.ssh/known_hosts
   script:
     - ssh "$SSH_USER"@"$SSH_SERVER" "docker stop blaue_tonne_api && docker rm blaue_tonne_api"
   environment:
