@@ -70,6 +70,6 @@ validate_deployment:
   stage: validate
   image: curlimages/curl:latest
   script:
-    - curl -L blauetonne.stkn.org/lk_rosenheim\?district="Bruckm%C3%BChl%202"
+    - curl -f -s -L blauetonne.stkn.org/lk_rosenheim\?district="Bruckm%C3%BChl%202"
   allow_failure: false
   needs: ["deploy"]
