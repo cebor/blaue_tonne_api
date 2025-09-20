@@ -72,6 +72,6 @@ validate_deployment:
   variables:
     GIT_STRATEGY: none
   script:
-    - curl -f -s -L blauetonne.stkn.org/lk_rosenheim\?district="Bruckm%C3%BChl%202"
+    - curl -fsL --get --data-urlencode "district=Bruckmühl 2" blauetonne.stkn.org/lk_rosenheim
   allow_failure: false
   needs: ["deploy"]
