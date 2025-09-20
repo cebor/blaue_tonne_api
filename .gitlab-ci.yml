@@ -69,6 +69,8 @@ undeploy:
 validate_deployment:
   stage: validate
   image: curlimages/curl:latest
+  variables:
+    GIT_STRATEGY: none
   script:
     - curl -f -s -L blauetonne.stkn.org/lk_rosenheim\?district="Bruckm%C3%BChl%202"
   allow_failure: false
