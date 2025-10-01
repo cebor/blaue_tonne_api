@@ -1,3 +1,4 @@
+from sys import stderr
 from urllib.error import HTTPError
 
 from camelot import read_pdf
@@ -22,7 +23,8 @@ def _parse_dates(df):
                 value = value[-DATE_LENGTH:]
             yield parse(value, dayfirst=True).isoformat()
         except ParserError:
-            pass
+            print(f"Could not parse date: {value}", file=stderr)
+            continue
 
 
 def get_dates(url: str, pages: str, district):
