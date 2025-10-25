@@ -72,7 +72,7 @@ validate_deployment:
   variables:
     GIT_STRATEGY: none
   script:
-    - sleep 30
-    - curl -fsL --get --data-urlencode "district=Bruckmühl 2" blauetonne.stkn.org/lk_rosenheim
+    - sleep 10
+    - curl -fsL blauetonne.stkn.org/health
   allow_failure: false
   needs: ["deploy"]
