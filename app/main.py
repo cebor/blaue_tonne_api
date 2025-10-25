@@ -9,6 +9,11 @@ LANDKREIS = "lk_rosenheim"
 cache = {LANDKREIS: {}}
 
 
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
+
+
 @app.get("/" + LANDKREIS)
 async def blaue_tonne_dates(district: str) -> list[str]:
     PLANS = [
