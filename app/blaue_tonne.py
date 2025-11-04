@@ -1,7 +1,7 @@
 from sys import stderr
 from urllib.error import HTTPError
 
-from camelot import read_pdf
+from camelot.io import read_pdf
 from dateutil.parser import ParserError, parse
 
 # Length of the date string in the format 'dd.mm.yy'
@@ -47,20 +47,10 @@ def get_dates(url: str, pages: str, district):
 
 
 if __name__ == "__main__":
-    PLANS = [
-        # {
-        #     "url": "https://chiemgau-recycling.de/wp-content/uploads/2022/11/Abfuhrplan_LK_Rosenheim_2023.pdf",
-        #     "pages": "1,2",
-        # },
-        # {
-        #     "url": "https://chiemgau-recycling.de/wp-content/uploads/2023/11/Abfuhrplan_LK_Rosenheim_2024.pdf",
-        #     "pages": "1,2",
-        # },
-        {
-            "url": "https://chiemgau-recycling.de/wp-content/uploads/2025/01/Abfuhrplan_LK_Rosenheim_2025.pdf",
-            "pages": "1,2",
-        },
-    ]
+    try:
+        from app.plans import PLANS  # type: ignore
+    except Exception:
+        PLANS = []
     DISTRICT = "Bruckmühl 2"
 
     for plan in PLANS:
