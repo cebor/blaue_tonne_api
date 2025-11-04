@@ -4,10 +4,10 @@ This is a FastAPI service that extracts waste collection dates from PDF schedule
 
 ## Architecture Overview
 
-- **Entry Point**: `app/main.py` - FastAPI application with in-memory caching
+- **Entry Point**: `app/main.py` - FastAPI application with in-memory caching and configuration loading
 - **Core Logic**: `app/blaue_tonne.py` - PDF parsing and date extraction using camelot-py
-- **Configuration**: `app/plans.py` - Central source for PDF URLs and page ranges
-- **API Interface**: Single endpoint `GET /lk_rosenheim?district=<name>` returning ISO-8601 dates
+- **Configuration**: `app/plans.yaml` - PDF URLs and page ranges in YAML format
+- **API Interface**: Single endpoint `GET /lk_rosenheim?district=<n>` returning ISO-8601 dates
 
 ## Key Patterns
 
@@ -21,9 +21,14 @@ This is a FastAPI service that extracts waste collection dates from PDF schedule
    - No cache invalidation implemented (restart service to refresh)
 
 3. **Configuration Management**:
-   - PDF sources configured in `app/plans.py` as Python list
+   - PDF sources configured in `app/plans.yaml`
    - Each plan entry requires `url` and `pages` keys
-   - Example: `{"url": "https://example.com/plan.pdf", "pages": "1,2"}`
+   - Example:
+     ```yaml
+     plans:
+       - url: "https://example.com/plan.pdf"
+         pages: "1,2"
+     ```
 
 ## Development Workflow
 

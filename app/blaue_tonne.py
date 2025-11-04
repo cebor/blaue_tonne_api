@@ -47,11 +47,17 @@ def get_dates(url: str, pages: str, district):
 
 
 if __name__ == "__main__":
+    from pathlib import Path
+    import yaml
+
+    DISTRICT = "Bruckmühl 2"
+    yaml_path = Path(__file__).parent / "plans.yaml"
     try:
-        from app.plans import PLANS  # type: ignore
+        with open(yaml_path, "r") as f:
+            config = yaml.safe_load(f)
+            PLANS = config["plans"]
     except Exception:
         PLANS = []
-    DISTRICT = "Bruckmühl 2"
 
     for plan in PLANS:
         dates = get_dates(plan["url"], plan["pages"], DISTRICT)

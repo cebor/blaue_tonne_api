@@ -1,12 +1,20 @@
+from pathlib import Path
+
+import yaml
 from fastapi import FastAPI, HTTPException
 
 from app.blaue_tonne import DistrictNotFoundException, get_dates
-from app.plans import PLANS
 
 
 app = FastAPI()
 
 LANDKREIS = "lk_rosenheim"
+
+# Load waste collection plans from YAML configuration
+yaml_path = Path(__file__).parent / "plans.yaml"
+with open(yaml_path, "r") as f:
+    config = yaml.safe_load(f)
+    PLANS = config["plans"]
 
 # simple in-memory cache keyed by LANDKREIS -> district -> dates
 cache = {LANDKREIS: {}}
@@ -19,8 +27,8 @@ async def health_check():
 
 @app.get("/" + LANDKREIS)
 async def blaue_tonne_dates(district: str) -> list[str]:
-    # PLANS are sourced from `app.plans.PLANS`
-    # edit `app/plans.py` to add or update plan entries
+    # PLANS are sourced from app/plans.yaml
+    # Edit app/plans.yaml to add or update plan entries
 
     if district in cache[LANDKREIS]:
         return cache[LANDKREIS][district]

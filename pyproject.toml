@@ -8,6 +8,7 @@ dependencies = [
     "camelot-py>=1.0.9",
     "fastapi[standard]>=0.117.1",
     "python-dateutil>=2.9.0.post0",
+    "pyyaml>=6.0.3",
 ]
 
 [tool.ruff]

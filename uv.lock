@@ -46,6 +46,7 @@ dependencies = [
     { name = "camelot-py" },
     { name = "fastapi", extra = ["standard"] },
     { name = "python-dateutil" },
+    { name = "pyyaml" },
 ]
 
 [package.metadata]
@@ -53,6 +54,7 @@ requires-dist = [
     { name = "camelot-py", specifier = ">=1.0.9" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.117.1" },
     { name = "python-dateutil", specifier = ">=2.9.0.post0" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
 ]
 
 [[package]]
