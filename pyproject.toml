@@ -15,12 +15,13 @@ dependencies = [
 test = [
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.5",
+    "pytest-xdist>=3.8.0",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-addopts = "-v --tb=short"
+addopts = "-n auto -v --tb=short"
 
 [tool.ruff]
 line-length = 120
