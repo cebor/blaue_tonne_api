@@ -16,13 +16,20 @@ curl 'http://localhost:8000/lk_rosenheim?district=Bruckm%C3%BChl%202'
 Run locally (uv + fastapi):
 
 ```bash
+# Install dependencies
 uv sync
+
+# Install test dependencies
+uv sync  --extra test
 
 # dev mod
 uv run fastapi dev
 
 # prod mod
 uv run fastapi run --host 127.0.0.1 --port 8000
+
+# run tests
+uv run pytest
 ```
 
 Run in Docker (recommended to match CI):

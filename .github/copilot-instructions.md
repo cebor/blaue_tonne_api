@@ -5,16 +5,19 @@ This is a FastAPI service that extracts waste collection dates from PDF schedule
 ## Architecture Overview
 
 - **Entry Point**: `app/main.py` - FastAPI application with in-memory caching and configuration loading
-- **Core Logic**: `app/blaue_tonne.py` - PDF parsing and date extraction using camelot-py
+- **Core Logic**: `app/blaue_tonne.py` - PDF parsing and date extraction using pdfplumber
 - **Configuration**: `app/plans.yaml` - PDF URLs and page ranges in YAML format
-- **API Interface**: Single endpoint `GET /lk_rosenheim?district=<n>` returning ISO-8601 dates
+- **API Interface**:
+  - Health check: `GET /health` returns service status
+  - Collection dates: `GET /lk_rosenheim?district=<n>` returning ISO-8601 dates
 
 ## Key Patterns
 
 1. **PDF Processing Flow**:
    - PDFs are processed on-demand when requests hit uncached districts
-   - PDF tables are parsed using camelot-py's "stream" flavor
-   - Dates are extracted from rows adjacent to the district name match
+   - PDF tables are parsed using pdfplumber with in-memory caching
+   - Dates are extracted and validated using dateutil parser
+   - PDF data is cached in memory to avoid repeated downloads
 
 2. **Data Caching**:
    - Simple in-memory dict cache keyed by `landkreis -> district -> dates`
@@ -34,8 +37,10 @@ This is a FastAPI service that extracts waste collection dates from PDF schedule
 
 1. **Local Development**:
    ```bash
-   uv sync              # Install dependencies
-   uv run fastapi dev   # Run development server
+   uv sync                 # Install dependencies
+   uv sync --extra test        # Install test dependencies
+   uv run fastapi dev     # Run development server
+   uv run pytest          # Run tests
    ```
 
 2. **Production Build**:
@@ -47,9 +52,15 @@ This is a FastAPI service that extracts waste collection dates from PDF schedule
 ## Important Notes
 
 - Service requires Python 3.14+
+- Dependencies:
+  - pdfplumber for PDF table extraction
+  - python-dateutil for date parsing
+  - FastAPI for web service
+  - PyYAML for configuration
 - Ruff is used for linting with 120 char line length
 - PDF parsing errors are logged to stderr but don't halt execution
 - All dates are returned in ISO-8601 format
 - District names must match PDF content exactly, including spaces and special characters
+- Test suite available using pytest with asyncio support
 
 When adding features or making changes, ensure the cache strategy and PDF processing approach are preserved unless explicitly requested otherwise.
