@@ -1,7 +1,8 @@
 from sys import stderr
 from urllib.error import HTTPError
-
-from camelot.io import read_pdf
+from urllib.request import urlopen
+from io import BytesIO, BufferedReader
+import pdfplumber
 from dateutil.parser import ParserError, parse
 
 # Length of the date string in the format 'dd.mm.yy'
@@ -12,38 +13,69 @@ class DistrictNotFoundException(Exception):
     pass
 
 
-def _parse_dates(df):
-    for col in df:
+PDF_CACHE = {}
+
+
+def _download_pdf(url: str) -> BufferedReader:
+    if url in PDF_CACHE:
+        pdf_data = PDF_CACHE[url]
+        return pdf_data
+
+    if not url.lower().endswith(".pdf"):
+        raise ValueError("URL must point to a PDF file")
+
+    response = urlopen(url)
+    if response.headers.get("content-type", "").lower() != "application/pdf":
+        raise ValueError("URL does not point to a valid PDF file")
+
+    # Read the PDF into memory and wrap it in a BufferedReader
+    pdf_data = BytesIO(response.read())
+    PDF_CACHE[url] = BufferedReader(pdf_data)
+    return PDF_CACHE[url]
+
+
+def _parse_dates(row):
+    for col in row:
         try:
-            value = df[col].values[0]
-            if not isinstance(value, str) or len(value) < DATE_LENGTH:
+            if not isinstance(col, str) or len(col) < DATE_LENGTH:
                 continue
             # rm preceding day names
-            if len(value) > DATE_LENGTH:
-                value = value[-DATE_LENGTH:]
-            yield parse(value, dayfirst=True).isoformat()
+            if len(col) > DATE_LENGTH:
+                col = col[-DATE_LENGTH:]
+            yield parse(col, dayfirst=True).isoformat()
         except ParserError:
-            print(f"Could not parse date: {value}", file=stderr)
+            print(f"Could not parse date: {col}", file=stderr)
             continue
 
 
 def get_dates(url: str, pages: str, district):
     try:
-        tables = read_pdf(url, flavor="stream", pages=pages)
+        pdf_reader = _download_pdf(url)
+        with pdfplumber.open(pdf_reader) as pdf:
+            page_numbers = [int(p) for p in pages.split(",")]
+            for page_num in page_numbers:
+                page = pdf.pages[page_num - 1]
+                tables = page.extract_tables()
+
+                for table in tables:
+                    for row_idx, row in enumerate(table):
+                        if district in (cell or "" for cell in row):
+                            yield from _parse_dates(row)
+                            if row_idx < len(table) - 1:
+                                yield from _parse_dates(table[row_idx + 1])
+                            return  # Found our district, we're done
+
+            # If we get here, district wasn't found
+            raise DistrictNotFoundException
+
     except HTTPError as err:
         if err.code == 404:
             return
         else:
             raise
-
-    for n in range(tables.n):
-        index = tables[n].df.loc[tables[n].df[0] == district].index
-        if not index.empty:
-            yield from _parse_dates(tables[n].df.loc[index - 1])
-            yield from _parse_dates(tables[n].df.loc[index + 1])
-            break
-    else:
-        raise DistrictNotFoundException
+    except Exception as e:
+        print(f"Error processing PDF: {e}", file=stderr)
+        raise
 
 
 if __name__ == "__main__":

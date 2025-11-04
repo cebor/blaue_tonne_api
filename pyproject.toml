@@ -5,11 +5,22 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "camelot-py>=1.0.9",
+    "pdfplumber>=0.10.3",
     "fastapi[standard]>=0.117.1",
     "python-dateutil>=2.9.0.post0",
     "pyyaml>=6.0.3",
 ]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.5",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
 
 [tool.ruff]
 line-length = 120
