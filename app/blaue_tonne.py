@@ -1,5 +1,4 @@
 from io import BufferedReader, BytesIO
-from sys import stderr
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
