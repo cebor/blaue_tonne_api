@@ -22,7 +22,7 @@ uv sync
 uv run fastapi dev
 
 # prod mod
-uv run fastapi dev --host 127.0.0.1 --port 8000
+uv run fastapi run --host 127.0.0.1 --port 8000
 ```
 
 Run in Docker (recommended to match CI):
