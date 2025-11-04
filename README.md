@@ -8,7 +8,7 @@ Small FastAPI service that extracts waste-collection dates from remote PDF "Abfu
 - Example:
 
 ```bash
-curl 'http://localhost:8000/lk_rosenheim?district=Bruckm%C3%BChl%202'
+curl 'http://localhost:8000/lk_rosenheim?district=Aschau'
 # => ["2025-01-06T00:00:00", "2025-02-03T00:00:00", ...]
 ```
 
