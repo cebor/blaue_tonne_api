@@ -45,7 +45,6 @@ def _parse_dates(row):
                 col = col[-DATE_LENGTH:]
             yield parse(col, dayfirst=True).isoformat()
         except ParserError:
-            print(f"Could not parse date: {col}", file=stderr)
             continue
 
 
@@ -74,9 +73,6 @@ def get_dates(url: str, pages: str, district):
             return
         else:
             raise
-    except Exception as e:
-        print(f"Error processing PDF: {e}", file=stderr)
-        raise
 
 
 if __name__ == "__main__":
