@@ -31,12 +31,22 @@ build:
   tags:
     - dind
 
+test:
+  stage: test
+  image: python:3.14
+  before_script:
+    - curl -LsSf https://astral.sh/uv/install.sh | sh
+    - source $HOME/.local/bin/env
+  script:
+    - uv run pytest
+
 include:
   - template: Jobs/SAST.gitlab-ci.yml
   - template: Jobs/Container-Scanning.gitlab-ci.yml
   - template: Jobs/SAST-IaC.gitlab-ci.yml
 
 deploy:
+  image: ubuntu
   stage: deploy
   extends: .deploy
   script:
@@ -52,6 +62,7 @@ deploy:
       when: manual
 
 undeploy:
+  image: ubuntu
   stage: deploy
   extends: .deploy
   variables:
