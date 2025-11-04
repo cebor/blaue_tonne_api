@@ -5,7 +5,6 @@ from fastapi import FastAPI, HTTPException
 
 from app.blaue_tonne import DistrictNotFoundException, get_dates
 
-
 app = FastAPI()
 
 LANDKREIS = "lk_rosenheim"

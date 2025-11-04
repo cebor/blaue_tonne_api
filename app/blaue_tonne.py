@@ -1,7 +1,8 @@
+from io import BufferedReader, BytesIO
 from sys import stderr
 from urllib.error import HTTPError
 from urllib.request import urlopen
-from io import BytesIO, BufferedReader
+
 import pdfplumber
 from dateutil.parser import ParserError, parse
 
@@ -80,6 +81,7 @@ def get_dates(url: str, pages: str, district):
 
 if __name__ == "__main__":
     from pathlib import Path
+
     import yaml
 
     DISTRICT = "Bruckmühl 2"
