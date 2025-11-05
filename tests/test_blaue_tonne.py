@@ -72,7 +72,7 @@ def test_get_dates_district_not_found():
 def test_get_dates_404():
     result = list(
         get_dates(
-            "https://chiemgau-recycling.de/invalid.pdf",
+            "https://chiemgau-recycling.de/404.pdf",
             "1",
             "Test District",
         )
