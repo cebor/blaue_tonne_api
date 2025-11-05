@@ -2,6 +2,9 @@
 .vscode/
 *.pyc
 
+# Test reports
+junit.xml
+
 # Coverage reports
 .coverage
 .coverage.*
