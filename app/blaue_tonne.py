@@ -47,7 +47,7 @@ def _parse_dates(row):
             continue
 
 
-def get_dates(url: str, pages: str, district):
+def get_dates(url: str, pages: str, district: str):
     try:
         pdf_reader = _download_pdf(url)
         with pdfplumber.open(pdf_reader) as pdf:
@@ -58,7 +58,7 @@ def get_dates(url: str, pages: str, district):
 
                 for table in tables:
                     for row_idx, row in enumerate(table):
-                        if district in (cell or "" for cell in row):
+                        if district in row:
                             yield from _parse_dates(row)
                             yield from _parse_dates(table[row_idx + 1])
                             return  # Found our district, we're done
