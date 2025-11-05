@@ -40,6 +40,21 @@ test:
   script:
     - uv run pytest
 
+coverage:
+  stage: test
+  image: python:3.14
+  before_script:
+    - curl -LsSf https://astral.sh/uv/install.sh | env UV_UNMANAGED_INSTALL="/usr/bin" sh
+    - uv sync --locked
+  script:
+    - uv run pytest --cov --cov-report xml:coverage.xml
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    expire_in: 1 week
+
 include:
   - template: Jobs/SAST.gitlab-ci.yml
   - template: Jobs/Container-Scanning.gitlab-ci.yml
