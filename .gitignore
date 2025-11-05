@@ -1,3 +1,10 @@
 .venv/
 .vscode/
 *.pyc
+
+# Coverage reports
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
