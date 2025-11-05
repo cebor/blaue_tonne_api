@@ -1,8 +1,8 @@
 import pytest
-from app.blaue_tonne import get_dates, DistrictNotFoundException
 
+from app.blaue_tonne import DistrictNotFoundException, get_dates
+from app.main import PLANS
 
-PDF_URL = "https://chiemgau-recycling.de/wp-content/uploads/2025/01/Abfuhrplan_LK_Rosenheim_2025.pdf"
 DISTRICTS = [
     "Albaching",
     "Amerang",
@@ -59,14 +59,15 @@ DISTRICTS = [
 
 @pytest.mark.parametrize("district", DISTRICTS)
 def test_get_dates_district_found(district):
-    dates = list(get_dates(PDF_URL, "1,2", district))
-    # TODO: Add actual date assertions once we have test data
-    assert len(dates) >= 0  # Replace with actual date checks
+    for plan in PLANS:
+        dates = list(get_dates(plan["url"], plan["pages"], district))
+        # TODO: Add actual date assertions once we have test data
+        assert len(dates) >= 0  # Replace with actual date checks
 
 
 def test_get_dates_district_not_found():
     with pytest.raises(DistrictNotFoundException):
-        list(get_dates(PDF_URL, "1,2", "NonexistentDistrict"))
+        list(get_dates(PLANS[0]["url"], PLANS[0]["pages"], "NonexistentDistrict"))
 
 
 def test_get_dates_404():
