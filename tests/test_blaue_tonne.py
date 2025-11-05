@@ -56,6 +56,7 @@ DISTRICTS = [
     "Vogtareuth",
 ]
 
+
 @pytest.mark.parametrize("district", DISTRICTS)
 def test_get_dates_district_found(district):
     dates = list(get_dates(PDF_URL, "1,2", district))
