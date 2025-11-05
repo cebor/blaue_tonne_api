@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
     import yaml
 
-    DISTRICT = "Bruckmühl 2"
+    DISTRICT = "Aschau"
     yaml_path = Path(__file__).parent / "plans.yaml"
     try:
         with open(yaml_path, "r") as f:
