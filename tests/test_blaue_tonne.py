@@ -56,12 +56,11 @@ DISTRICTS = [
     "Vogtareuth",
 ]
 
-
-def test_get_dates_district_found():
-    for district in DISTRICTS:
-        dates = list(get_dates(PDF_URL, "1,2", district))
-        # TODO: Add actual date assertions once we have test data
-        assert len(dates) >= 0  # Replace with actual date checks
+@pytest.mark.parametrize("district", DISTRICTS)
+def test_get_dates_district_found(district):
+    dates = list(get_dates(PDF_URL, "1,2", district))
+    # TODO: Add actual date assertions once we have test data
+    assert len(dates) >= 0  # Replace with actual date checks
 
 
 def test_get_dates_district_not_found():
