@@ -89,6 +89,26 @@ docker build -t blaue-tonne-api:local .
 docker run --rm -p 8000:80 blaue-tonne-api:local
 ```
 
+### Changing Python Version
+
+Use the `pyver.sh` script to update Python version across all configuration files:
+
+```bash
+# Update to Python 3.13
+./pyver.sh 3.13
+```
+
+This automatically updates:
+- `.python-version`
+- `pyproject.toml` (`requires-python`)
+- `Dockerfile` (base image)
+- `.gitlab-ci.yml` (test job)
+
+After running the script:
+1. Update your local Python environment
+2. Run `uv sync` to update dependencies
+3. Test the application
+
 ## Configuration
 
 Edit `app/plans.yaml` to add or modify PDF sources:
