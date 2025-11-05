@@ -73,7 +73,7 @@ def get_dates(url: str, pages: str, district):
             raise
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     from pathlib import Path
 
     import yaml
