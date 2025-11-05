@@ -79,13 +79,11 @@ if __name__ == "__main__":
     import yaml
 
     DISTRICT = "Aschau"
+
     yaml_path = Path(__file__).parent / "plans.yaml"
-    try:
-        with open(yaml_path, "r") as f:
-            config = yaml.safe_load(f)
-            PLANS = config["plans"]
-    except Exception:
-        PLANS = []
+    with open(yaml_path, "r") as f:
+        config = yaml.safe_load(f)
+        PLANS = config["plans"]
 
     for plan in PLANS:
         dates = get_dates(plan["url"], plan["pages"], DISTRICT)
