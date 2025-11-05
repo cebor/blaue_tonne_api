@@ -1,84 +1,87 @@
 # AI Agent Instructions for blaue-tonne-api
 
-This is a FastAPI service that extracts waste collection dates from PDF schedules and provides them via HTTP API. The service specifically handles schedules for the Rosenheim district (Landkreis).
+FastAPI service that extracts waste collection dates from PDF schedules and exposes them via HTTP API. Handles schedules for Rosenheim district (Landkreis).
 
 ## Architecture Overview
 
-- **Entry Point**: `app/main.py` - FastAPI application with in-memory caching and configuration loading
-- **Core Logic**: `app/blaue_tonne.py` - PDF parsing and date extraction using pdfplumber
-- **Configuration**: `app/plans.yaml` - PDF URLs and page ranges in YAML format
-- **API Interface**:
-  - Health check: `GET /health` returns service status
-  - Collection dates: `GET /lk_rosenheim?district=<n>` returning ISO-8601 dates
+**Three-file core:**
+- `app/main.py` - FastAPI app, in-memory cache, YAML config loading
+- `app/blaue_tonne.py` - PDF parsing with pdfplumber, date extraction with dateutil
+- `app/plans.yaml` - PDF URLs and page ranges
 
-## Key Patterns
+**API endpoints:**
+- `GET /health` - Service status
+- `GET /lk_rosenheim?district=<name>` - Returns ISO-8601 datetime strings (e.g., `"2025-01-15T00:00:00"`)
 
-1. **PDF Processing Flow**:
-   - PDFs are processed on-demand when requests hit uncached districts
-   - PDF tables are parsed using pdfplumber with in-memory caching
-   - Dates are extracted and validated using dateutil parser
-   - PDF data is cached in memory to avoid repeated downloads
+## Critical Implementation Details
 
-2. **Data Caching**:
-   - Simple in-memory dict cache keyed by `landkreis -> district -> dates`
-   - No cache invalidation implemented (restart service to refresh)
+### PDF Processing & Caching Strategy
+- **Two-level cache**: `PDF_CACHE` in `blaue_tonne.py` stores downloaded PDFs as `BufferedReader` objects; `cache` in `main.py` stores extracted dates per district
+- PDFs downloaded on first request, wrapped in `BytesIO` + `BufferedReader` for pdfplumber reusability
+- No cache invalidation - restart service to refresh data
+- District matching uses simple `if district in row:` on table rows (exact string match required)
+- Dates extracted from two rows: current row + next row (`table[row_idx + 1]`)
 
-3. **Configuration Management**:
-   - PDF sources configured in `app/plans.yaml`
-   - Each plan entry requires `url` and `pages` keys
-   - Example:
-     ```yaml
-     plans:
-       - url: "https://example.com/plan.pdf"
-         pages: "1,2"
-     ```
+### Date Parsing Pattern
+```python
+# In _parse_dates(): strips day names, keeps last 8 chars (dd.mm.yy format)
+if len(col) > DATE_LENGTH:
+    col = col[-DATE_LENGTH:]
+yield parse(col, dayfirst=True).isoformat()
+```
 
-## Testing
+### Error Handling Specifics
+- `DistrictNotFoundException` raised when district not found in any table
+- HTTP 404 from PDF URL returns empty list (graceful degradation)
+- Non-PDF URLs raise `ValueError` (checked via content-type header)
 
-The test suite in `tests/test_blaue_tonne.py` covers:
+## Testing Approach
 
-1. **District Validation**: Parametrized tests for all 50+ districts in Rosenheim LK
-   - Tests use real PDF URL to verify each district can be found and parsed
-   - Each district test validates that dates can be extracted (non-empty result)
+**Two test files:**
+1. `tests/test_blaue_tonne.py` - Unit tests for PDF parsing logic (50+ parametrized district tests)
+2. `tests/test_api.py` - Integration tests using `TestClient` for HTTP endpoints
 
-2. **Error Handling**:
-   - `DistrictNotFoundException` raised for non-existent districts
-   - 404 URLs return empty list (graceful degradation)
-   - Invalid URLs (non-PDF) raise `ValueError`
+**Key testing patterns:**
+- `@pytest.fixture(autouse=True)` clears cache before/after each test for isolation
+- Tests use live PDF from production (chiemgau-recycling.de)
+- District names with special chars/numbers tested (e.g., "Bruckmühl 1", "Prien a. Chiemsee")
+- Main block in `blaue_tonne.py` marked with `# pragma: no cover` (manual testing only)
 
-3. **Test Data**:
-   - Uses live PDF from chiemgau-recycling.de
-   - District list includes numbered variants (e.g., "Aschau", "Bad Aibling")
-   - Tests use pages "1,2" as configured in production
-
-**Note**: Tests currently validate data extraction but don't assert specific dates (TODO comment exists for adding actual date assertions once test data is established).
+**Run tests:**
+```bash
+uv run pytest              # All tests with xdist parallel
+uv run pytest tests/test_api.py -v  # Specific file
+pytest --cov               # Coverage report (pytest-cov installed)
+```
 
 ## Development Workflow
 
-1. **Local Development**:
-   ```bash
-   uv sync                 # Install dependencies
-   uv run fastapi dev      # Run development server
-   uv run pytest           # Run tests
-   ```
+**Local dev (uv + Python 3.14+):**
+```bash
+uv sync                    # Install deps from uv.lock
+uv run fastapi dev         # Dev server with auto-reload
+```
 
-2. **Production Build**:
-   ```bash
-   docker build -t blaue-tonne-api:local .
-   docker run --rm -p 8000:80 blaue-tonne-api:local
-   ```
+**Docker (matches CI):**
+```bash
+docker build -t blaue-tonne-api:local .
+docker run --rm -p 8000:80 blaue-tonne-api:local
+```
 
-## Important Notes
+**Adding new districts/PDFs:**
+Edit `app/plans.yaml` - each entry needs `url` and `pages` (comma-separated, 1-indexed)
 
-- Service requires Python 3.14+
-- Dependencies:
-  - pdfplumber for PDF table extraction
-  - python-dateutil for date parsing
-  - FastAPI for web service
-  - PyYAML for configuration
-- Ruff is used for linting with 120 char line length
-- All dates are returned in ISO-8601 format
-- District names must match PDF content exactly, including spaces and special characters
-- Test suite available using pytest with asyncio support
+## Code Style & Conventions
 
-When adding features or making changes, ensure the cache strategy and PDF processing approach are preserved unless explicitly requested otherwise.
+- **Ruff**: 120 char line length (`pyproject.toml`)
+- **pytest config**: `addopts = "-n auto -v --tb=short"` (parallel execution by default)
+- **Type hints**: Used on function signatures (e.g., `get_dates(url: str, pages: str, district: str)`)
+- **Generator pattern**: `_parse_dates()` and `get_dates()` yield results for memory efficiency
+
+## Gotchas
+
+1. **District name matching is exact** - spaces, umlauts, numbers must match PDF exactly (e.g., "Nußdorf am Inn" not "Nussdorf")
+2. **Dates include time component** - API returns `"2025-01-15T00:00:00"` not just `"2025-01-15"`
+3. **Page numbers are 1-indexed** in YAML config but converted to 0-indexed internally
+4. **Cache is global module-level** - `cache[LANDKREIS]` in main.py and `PDF_CACHE` in blaue_tonne.py persist across requests
+5. **Coverage files excluded** - `.coverage`, `htmlcov/` in `.gitignore`
