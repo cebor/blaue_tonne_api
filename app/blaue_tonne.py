@@ -60,8 +60,7 @@ def get_dates(url: str, pages: str, district):
                     for row_idx, row in enumerate(table):
                         if district in (cell or "" for cell in row):
                             yield from _parse_dates(row)
-                            if row_idx < len(table) - 1:
-                                yield from _parse_dates(table[row_idx + 1])
+                            yield from _parse_dates(table[row_idx + 1])
                             return  # Found our district, we're done
 
             # If we get here, district wasn't found
