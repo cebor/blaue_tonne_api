@@ -1,7 +1,6 @@
 from io import BufferedReader, BytesIO
-from urllib.error import HTTPError
-from urllib.request import urlopen
 
+import httpx
 import pdfplumber
 from dateutil.parser import ParserError, parse
 
@@ -24,12 +23,13 @@ def _download_pdf(url: str) -> BufferedReader:
     if not url.lower().endswith(".pdf"):
         raise ValueError("URL must point to a PDF file")
 
-    response = urlopen(url)
+    response = httpx.get(url, follow_redirects=True)
+    response.raise_for_status()
     if response.headers.get("content-type", "").lower() != "application/pdf":
         raise ValueError("URL does not point to a valid PDF file")
 
     # Read the PDF into memory and wrap it in a BufferedReader
-    pdf_data = BytesIO(response.read())
+    pdf_data = BytesIO(response.content)
     PDF_CACHE[url] = BufferedReader(pdf_data)
     return PDF_CACHE[url]
 
@@ -66,8 +66,8 @@ def get_dates(url: str, pages: str, district):
             # If we get here, district wasn't found
             raise DistrictNotFoundException
 
-    except HTTPError as err:
-        if err.code == 404:
+    except httpx.HTTPStatusError as err:
+        if err.response.status_code == 404:
             return
         else:
             raise

@@ -39,6 +39,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "fastapi", extra = ["standard"] },
+    { name = "httpx" },
     { name = "pdfplumber" },
     { name = "python-dateutil" },
     { name = "pyyaml" },
@@ -54,6 +55,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "fastapi", extras = ["standard"], specifier = ">=0.117.1" },
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "pdfplumber", specifier = ">=0.10.3" },
     { name = "python-dateutil", specifier = ">=2.9.0.post0" },
     { name = "pyyaml", specifier = ">=6.0.3" },

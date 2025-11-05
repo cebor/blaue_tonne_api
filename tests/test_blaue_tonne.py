@@ -69,7 +69,7 @@ def test_get_dates_district_not_found():
         list(get_dates(PDF_URL, "1,2", "NonexistentDistrict"))
 
 
-def test_get_dates_invalid_url():
+def test_get_dates_404():
     result = list(
         get_dates(
             "https://chiemgau-recycling.de/invalid.pdf",
@@ -78,3 +78,14 @@ def test_get_dates_invalid_url():
         )
     )
     assert result == []  # Should return empty list for 404
+
+
+def test_get_dates_invalid_url():
+    with pytest.raises(ValueError):
+        list(
+            get_dates(
+                "https://chiemgau-recycling.de/invalid",
+                "1",
+                "Test District",
+            )
+        )
