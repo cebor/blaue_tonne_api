@@ -58,7 +58,6 @@ This is a FastAPI service that extracts waste collection dates from PDF schedule
   - FastAPI for web service
   - PyYAML for configuration
 - Ruff is used for linting with 120 char line length
-- PDF parsing errors are logged to stderr but don't halt execution
 - All dates are returned in ISO-8601 format
 - District names must match PDF content exactly, including spaces and special characters
 - Test suite available using pytest with asyncio support
