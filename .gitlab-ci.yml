@@ -38,7 +38,10 @@ test:
     - curl -LsSf https://astral.sh/uv/install.sh | env UV_UNMANAGED_INSTALL="/usr/bin" sh
     - uv sync --locked
   script:
-    - uv run pytest
+    - uv run pytest --junit-xml=junit.xml
+  artifacts:
+    reports:
+      junit: junit.xml
 
 coverage:
   stage: test
