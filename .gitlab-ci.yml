@@ -3,6 +3,7 @@ stages:
   - test
   - deploy
   - validate
+  - undeploy
 
 variables:
   IMAGE_TAG: $CI_REGISTRY_IMAGE:latest
@@ -70,7 +71,7 @@ deploy:
 
 undeploy:
   image: ubuntu
-  stage: deploy
+  stage: undeploy
   extends: .deploy
   variables:
     GIT_STRATEGY: none
