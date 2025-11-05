@@ -19,9 +19,6 @@ Run locally (uv + fastapi):
 # Install dependencies
 uv sync
 
-# Install test dependencies
-uv sync --extra test
-
 # dev mod
 uv run fastapi dev
 

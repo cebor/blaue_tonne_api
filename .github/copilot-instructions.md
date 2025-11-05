@@ -38,9 +38,8 @@ This is a FastAPI service that extracts waste collection dates from PDF schedule
 1. **Local Development**:
    ```bash
    uv sync                 # Install dependencies
-   uv sync --extra test        # Install test dependencies
-   uv run fastapi dev     # Run development server
-   uv run pytest          # Run tests
+   uv run fastapi dev      # Run development server
+   uv run pytest           # Run tests
    ```
 
 2. **Production Build**:
