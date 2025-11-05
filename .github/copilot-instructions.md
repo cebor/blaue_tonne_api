@@ -33,6 +33,26 @@ This is a FastAPI service that extracts waste collection dates from PDF schedule
          pages: "1,2"
      ```
 
+## Testing
+
+The test suite in `tests/test_blaue_tonne.py` covers:
+
+1. **District Validation**: Parametrized tests for all 50+ districts in Rosenheim LK
+   - Tests use real PDF URL to verify each district can be found and parsed
+   - Each district test validates that dates can be extracted (non-empty result)
+
+2. **Error Handling**:
+   - `DistrictNotFoundException` raised for non-existent districts
+   - 404 URLs return empty list (graceful degradation)
+   - Invalid URLs (non-PDF) raise `ValueError`
+
+3. **Test Data**:
+   - Uses live PDF from chiemgau-recycling.de
+   - District list includes numbered variants (e.g., "Aschau", "Bad Aibling")
+   - Tests use pages "1,2" as configured in production
+
+**Note**: Tests currently validate data extraction but don't assert specific dates (TODO comment exists for adding actual date assertions once test data is established).
+
 ## Development Workflow
 
 1. **Local Development**:
