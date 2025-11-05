@@ -27,3 +27,19 @@ addopts = "-n auto -v --tb=short"
 
 [tool.ruff]
 line-length = 120
+
+[tool.coverage.run]
+source = ["app"]
+omit = [
+    "tests/*",
+    "**/__pycache__/*",
+    "**/__init__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+    "pass",
+]
