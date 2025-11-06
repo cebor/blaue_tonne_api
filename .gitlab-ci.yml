@@ -38,7 +38,7 @@ test:
     - curl -LsSf https://astral.sh/uv/install.sh | env UV_UNMANAGED_INSTALL="/usr/bin" sh
     - uv sync --locked
   script:
-    - uv run pytest --junit-xml=junit.xml --cov --cov-report xml:coverage.xml --cov-report=term
+    - uv run pytest -v --junit-xml=junit.xml --cov --cov-report xml:coverage.xml --cov-report=term
   coverage: '/TOTAL.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   artifacts:
     reports:
