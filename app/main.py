@@ -24,7 +24,13 @@ async def health_check():
     return {"status": "healthy"}
 
 
-@app.get("/" + LANDKREIS)
+@app.get(
+    "/" + LANDKREIS,
+    responses={
+        200: {"description": "List of waste collection dates for the specified district"},
+        404: {"description": "District not found"},
+    },
+)
 async def blaue_tonne_dates(district: str) -> list[str]:
     # PLANS are sourced from app/plans.yaml
     # Edit app/plans.yaml to add or update plan entries
