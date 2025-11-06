@@ -1,0 +1,9 @@
+# <type>: <subject>
+#
+# type: feat, fix, docs, style, refactor, test, chore
+# subject: short summary (max 50 chars, no period)
+#
+# Example:
+# feat: add new district to plans.yaml
+# fix: correct date parsing for umlauts
+# test: add edge case for multi-page PDFs
