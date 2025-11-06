@@ -20,13 +20,13 @@ dev = [
     "pytest-xdist>=3.8.0",
 ]
 
+[tool.ruff]
+line-length = 120
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-addopts = "-n auto -v --tb=short"
-
-[tool.ruff]
-line-length = 120
+addopts = "-n auto --tb=short"
 
 [tool.coverage.run]
 source = ["app"]
