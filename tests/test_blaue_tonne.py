@@ -59,6 +59,7 @@ DISTRICTS = [
 
 @pytest.mark.parametrize("district", DISTRICTS)
 def test_get_dates_district_found(district):
+    """Test that all known districts can be found in the PDF schedules."""
     for plan in PLANS:
         dates = list(get_dates(plan["url"], plan["pages"], district))
         # TODO: Add actual date assertions once we have test data
@@ -66,11 +67,13 @@ def test_get_dates_district_found(district):
 
 
 def test_get_dates_district_not_found():
+    """Test that DistrictNotFoundException is raised for non-existent districts."""
     with pytest.raises(DistrictNotFoundException):
         list(get_dates(PLANS[0]["url"], PLANS[0]["pages"], "NonexistentDistrict"))
 
 
 def test_get_dates_404():
+    """Test that a 404 PDF URL returns an empty list (graceful degradation)."""
     result = list(
         get_dates(
             "https://chiemgau-recycling.de/404.pdf",
@@ -82,6 +85,7 @@ def test_get_dates_404():
 
 
 def test_get_dates_invalid_url():
+    """Test that ValueError is raised for non-PDF URLs."""
     with pytest.raises(ValueError):
         list(
             get_dates(
