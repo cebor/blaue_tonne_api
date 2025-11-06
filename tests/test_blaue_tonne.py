@@ -105,16 +105,19 @@ def test_get_dates_invalid_url():
     [
         pytest.param(
             "http://httpbin/anything/not_a_pdf.pdf",
-            marks=pytest.mark.skipif(not CI, reason="CI-only: uses local httpbin instance"),
+            marks=pytest.mark.skipif(not CI, reason="Skipped locally - local httpbin instance not available"),
         ),
         pytest.param(
             "http://httpbin.org/anything/not_a_pdf.pdf",
-            marks=pytest.mark.skipif(CI, reason="Non-CI: uses public httpbin.org"),
+            marks=pytest.mark.skipif(CI, reason="Skipped in CI - using local httpbin instance instead"),
         ),
     ],
 )
 def test_get_dates_invalid_content_type(url):
-    """Test that ValueError is raised when content-type is not application/pdf."""
+    """Test that ValueError is raised when content-type is not application/pdf.
+
+    Note: In CI, this test uses a local httpbin instance for faster/more reliable testing.
+    """
     with pytest.raises(ValueError) as e:
         list(
             get_dates(
