@@ -99,15 +99,24 @@ def test_get_dates_invalid_url():
     assert "URL must point to a PDF file" in str(e.value)
 
 
-def test_get_dates_invalid_content_type():
+@pytest.mark.parametrize(
+    "url",
+    [
+        pytest.param(
+            "http://httpbin/anything/not_a_pdf.pdf",
+            marks=pytest.mark.skipif(
+                not bool(os.getenv("CI")),
+                reason="CI-only: uses local httpbin instance",
+            ),
+        ),
+        pytest.param(
+            "http://httpbin.org/anything/not_a_pdf.pdf",
+            marks=pytest.mark.skipif(bool(os.getenv("CI")), reason="Non-CI: uses public httpbin.org"),
+        ),
+    ],
+)
+def test_get_dates_invalid_content_type(url):
     """Test that ValueError is raised when content-type is not application/pdf."""
-
-    # use local httpbin instance in CI to avoid external dependency issues
-    if os.getenv("CI"):
-        url = "http://httpbin/anything/not_a_pdf.pdf"
-    else:
-        url = "http://httpbin.org/anything/not_a_pdf.pdf"
-
     with pytest.raises(ValueError) as e:
         list(
             get_dates(
@@ -117,4 +126,3 @@ def test_get_dates_invalid_content_type():
             )
         )
     assert "URL does not point to a valid PDF file" in str(e.value)
-
