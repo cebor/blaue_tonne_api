@@ -105,10 +105,7 @@ def test_get_dates_invalid_url():
     [
         pytest.param(
             "http://httpbin/anything/not_a_pdf.pdf",
-            marks=pytest.mark.skipif(
-                not CI,
-                reason="CI-only: uses local httpbin instance",
-            ),
+            marks=pytest.mark.skipif(not CI, reason="CI-only: uses local httpbin instance"),
         ),
         pytest.param(
             "http://httpbin.org/anything/not_a_pdf.pdf",
