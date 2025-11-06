@@ -1,6 +1,5 @@
 import os
 import pytest
-from httpx import HTTPStatusError
 
 from app.blaue_tonne import DistrictNotFoundException, get_dates
 from app.main import PLANS
