@@ -57,6 +57,8 @@ DISTRICTS = [
     "Vogtareuth",
 ]
 
+CI = bool(os.getenv("CI"))
+
 
 @pytest.mark.parametrize("district", DISTRICTS)
 def test_get_dates_district_found(district):
@@ -104,13 +106,13 @@ def test_get_dates_invalid_url():
         pytest.param(
             "http://httpbin/anything/not_a_pdf.pdf",
             marks=pytest.mark.skipif(
-                not bool(os.getenv("CI")),
+                not CI,
                 reason="CI-only: uses local httpbin instance",
             ),
         ),
         pytest.param(
             "http://httpbin.org/anything/not_a_pdf.pdf",
-            marks=pytest.mark.skipif(bool(os.getenv("CI")), reason="Non-CI: uses public httpbin.org"),
+            marks=pytest.mark.skipif(CI, reason="Non-CI: uses public httpbin.org"),
         ),
     ],
 )
