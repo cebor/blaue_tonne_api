@@ -1,4 +1,5 @@
 import pytest
+from httpx import HTTPStatusError
 
 from app.blaue_tonne import DistrictNotFoundException, get_dates
 from app.main import PLANS
@@ -86,7 +87,7 @@ def test_get_dates_404():
 
 def test_get_dates_invalid_url():
     """Test that ValueError is raised for non-PDF URLs."""
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as e:
         list(
             get_dates(
                 "https://chiemgau-recycling.de/invalid",
@@ -94,3 +95,18 @@ def test_get_dates_invalid_url():
                 "Test District",
             )
         )
+    assert "URL must point to a PDF file" in str(e.value)
+
+
+def test_get_dates_invalid_content_type():
+    """Test that ValueError is raised when content-type is not application/pdf."""
+    with pytest.raises(ValueError) as e:
+        list(
+            get_dates(
+                "http://httpbin.org/anything/not_a_pdf.pdf",
+                "1",
+                "Test District",
+            )
+        )
+    assert "URL does not point to a valid PDF file" in str(e.value)
+
