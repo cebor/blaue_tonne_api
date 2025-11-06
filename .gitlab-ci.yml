@@ -34,6 +34,9 @@ build:
 test:
   stage: test
   image: python:3.14
+  services:
+    - name: "kennethreitz/httpbin"
+      alias: "httpbin"
   before_script:
     - curl -LsSf https://astral.sh/uv/install.sh | env UV_UNMANAGED_INSTALL="/usr/bin" sh
     - uv sync --locked

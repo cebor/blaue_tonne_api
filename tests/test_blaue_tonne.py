@@ -1,3 +1,4 @@
+import os
 import pytest
 from httpx import HTTPStatusError
 
@@ -100,10 +101,17 @@ def test_get_dates_invalid_url():
 
 def test_get_dates_invalid_content_type():
     """Test that ValueError is raised when content-type is not application/pdf."""
+
+    # use local httpbin instance in CI to avoid external dependency issues
+    if os.getenv("CI"):
+        url = "http://httpbin/anything/not_a_pdf.pdf"
+    else:
+        url = "http://httpbin.org/anything/not_a_pdf.pdf"
+
     with pytest.raises(ValueError) as e:
         list(
             get_dates(
-                "http://httpbin.org/anything/not_a_pdf.pdf",
+                url,
                 "1",
                 "Test District",
             )
