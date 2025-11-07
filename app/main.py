@@ -29,7 +29,10 @@ async def health_check():
     "/" + LANDKREIS,
     responses={
         200: {"description": "List of waste collection dates for the specified district"},
-        404: {"description": "District not found"},
+        404: {
+            "description": "District not found",
+            "content": {"application/json": {"example": {"detail": "District not found"}}},
+        },
     },
 )
 async def blaue_tonne_dates(district: str) -> list[datetime]:
