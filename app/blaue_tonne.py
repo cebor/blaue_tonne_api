@@ -42,7 +42,7 @@ def _parse_dates(row):
             # rm preceding day names
             if len(col) > DATE_LENGTH:
                 col = col[-DATE_LENGTH:]
-            yield parse(col, dayfirst=True).isoformat()
+            yield parse(col, dayfirst=True)
         except ParserError:
             continue
 

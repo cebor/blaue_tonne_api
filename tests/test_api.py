@@ -60,7 +60,9 @@ def test_cache_functionality(client):
 
     # Verify the district is now in cache
     assert district in cache[LANDKREIS]
-    assert cache[LANDKREIS][district] == dates1
+    # Cache stores datetime objects, convert to ISO strings for comparison
+    cached_dates = [dt.isoformat() for dt in cache[LANDKREIS][district]]
+    assert cached_dates == dates1
 
     # Second request should return the same cached data
     response2 = client.get(f"/lk_rosenheim?district={district}")

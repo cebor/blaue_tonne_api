@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 
 import yaml
@@ -31,7 +32,7 @@ async def health_check():
         404: {"description": "District not found"},
     },
 )
-async def blaue_tonne_dates(district: str) -> list[str]:
+async def blaue_tonne_dates(district: str) -> list[datetime]:
     # PLANS are sourced from app/plans.yaml
     # Edit app/plans.yaml to add or update plan entries
 
