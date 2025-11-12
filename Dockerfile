@@ -13,7 +13,12 @@ FROM python:3.14-slim
 
 WORKDIR /code
 
-COPY --from=builder /code/.venv /code/.venv
-COPY ./app /code/app
+RUN groupadd -r fastapi && useradd -r -g fastapi fastapi
+USER fastapi
+
+COPY --from=builder --chown=fastapi /code/.venv /code/.venv
+COPY --chown=fastapi ./app /code/app
+
+EXPOSE 80
 
 CMD ["/code/.venv/bin/fastapi", "run", "--port", "80", "--proxy-headers", "--forwarded-allow-ips", "172.17.0.1"]
