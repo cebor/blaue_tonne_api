@@ -11,7 +11,7 @@ FastAPI service that extracts waste collection dates from PDF schedules and expo
 ## Project Structure
 
 ```
-blaue_tonne/
+blaue_tonne_api/
 ├── app/
 │   ├── __init__.py
 │   ├── main.py                # FastAPI application with endpoints and caching
