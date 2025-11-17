@@ -8,6 +8,31 @@ FastAPI service that extracts waste collection dates from PDF schedules and expo
 - **In-Memory Caching**: Caches both downloaded PDFs and extracted dates for fast subsequent requests
 - **RESTful API**: Simple HTTP endpoints for date retrieval and health checks
 
+## Project Structure
+
+```
+blaue_tonne/
+├── app/
+│   ├── __init__.py
+│   ├── main.py                # FastAPI application with endpoints and caching
+│   ├── blaue_tonne.py         # PDF parsing and date extraction logic
+│   └── plans.yaml             # Configuration: PDF URLs and page ranges
+├── tests/
+│   ├── __init__.py
+│   ├── test_api.py            # Integration tests for HTTP endpoints
+│   └── test_blaue_tonne.py    # Unit tests for PDF parsing
+├── .gitlab-ci.yml             # GitLab CI/CD pipeline
+├── Dockerfile                 # Multi-stage Docker build
+├── pyproject.toml             # Python dependencies and project metadata
+├── pyver.sh                   # Script to update Python version across configs
+└── README.md                  # This file
+```
+
+**Key Files:**
+- `app/main.py` - FastAPI app with sync endpoints, in-memory cache, YAML config loading
+- `app/blaue_tonne.py` - PDF parsing with pdfplumber, date extraction with dateutil
+- `app/plans.yaml` - Single-source config for PDF URLs and page ranges (1-indexed)
+
 ## API Endpoints
 
 ### Get Collection Dates
