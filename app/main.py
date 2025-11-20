@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from pathlib import Path
 
@@ -5,6 +6,15 @@ import yaml
 from fastapi import FastAPI, HTTPException
 
 from app.blaue_tonne import DistrictNotFoundException, get_dates
+
+
+# Filter out health check requests from access logs
+class HealthCheckFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        return "/health" not in record.getMessage()
+
+
+logging.getLogger("uvicorn.access").addFilter(HealthCheckFilter())
 
 app = FastAPI()
 
