@@ -25,6 +25,23 @@ def test_health_check(client):
     assert response.json() == {"status": "healthy"}
 
 
+def test_health_check_filtered_from_logs(client, caplog):
+    """Test that health check requests are filtered out of access logs."""
+    import logging
+
+    # Set up logging to capture uvicorn.access logs
+    caplog.set_level(logging.INFO, logger="uvicorn.access")
+
+    # Make a health check request
+    response = client.get("/health")
+    assert response.status_code == 200
+
+    # Verify no log records contain "/health"
+    for record in caplog.records:
+        if record.name == "uvicorn.access":
+            assert "/health" not in record.getMessage()
+
+
 def test_get_dates_for_valid_district(client):
     """Test retrieving waste collection dates for a valid district."""
     response = client.get("/lk_rosenheim?district=Kolbermoor")
