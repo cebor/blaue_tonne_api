@@ -104,7 +104,7 @@ def test_get_dates_invalid_url():
     "url",
     [
         pytest.param(
-            "http://httpbingo/anything/not_a_pdf.pdf",
+            "http://httpbingo:8080/anything/not_a_pdf.pdf",
             marks=pytest.mark.skipif(not CI, reason="Skipped locally - local httpbingo instance not available"),
         ),
         pytest.param(
