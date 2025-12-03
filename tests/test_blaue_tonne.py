@@ -104,12 +104,12 @@ def test_get_dates_invalid_url():
     "url",
     [
         pytest.param(
-            "http://httpbin/anything/not_a_pdf.pdf",
-            marks=pytest.mark.skipif(not CI, reason="Skipped locally - local httpbin instance not available"),
+            "http://httpbingo/anything/not_a_pdf.pdf",
+            marks=pytest.mark.skipif(not CI, reason="Skipped locally - local httpbingo instance not available"),
         ),
         pytest.param(
-            "http://httpbin.org/anything/not_a_pdf.pdf",
-            marks=pytest.mark.skipif(CI, reason="Skipped in CI - using local httpbin instance instead"),
+            "http://httpbingo.org/anything/not_a_pdf.pdf",
+            marks=pytest.mark.skipif(CI, reason="Skipped in CI - using local httpbingo instance instead"),
         ),
     ],
 )
