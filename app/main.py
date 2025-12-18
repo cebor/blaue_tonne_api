@@ -16,7 +16,26 @@ class HealthCheckFilter(logging.Filter):
 
 logging.getLogger("uvicorn.access").addFilter(HealthCheckFilter())
 
-app = FastAPI()
+app = FastAPI(
+    title="Blaue Tonne API",
+    description="""
+FastAPI service that extracts waste collection dates from PDF schedules and exposes them via HTTP API.
+
+Handles schedules for Rosenheim district (Landkreis Rosenheim).
+
+## Source Code
+[GitLab Repository](https://gitlab.stkn.org/felix/blaue_tonne_api)
+    """,
+    version="0.1.0",
+    contact={
+        "name": "Source Code",
+        "url": "https://gitlab.stkn.org/felix/blaue_tonne_api",
+    },
+    license_info={
+        "name": "MIT",
+        "identifier": "MIT",
+    },
+)
 
 LANDKREIS = "lk_rosenheim"
 
