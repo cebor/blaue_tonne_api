@@ -50,27 +50,27 @@ def _parse_dates(row):
 def get_dates(url: str, pages: str, district: str):
     try:
         pdf_reader = _download_pdf(url)
-        with pdfplumber.open(pdf_reader) as pdf:
-            page_numbers = [int(p) for p in pages.split(",")]
-            for page_num in page_numbers:
-                page = pdf.pages[page_num - 1]
-                tables = page.extract_tables()
-
-                for table in tables:
-                    for row_idx, row in enumerate(table):
-                        if district in row:
-                            yield from _parse_dates(row)
-                            yield from _parse_dates(table[row_idx + 1])
-                            return  # Found our district, we're done
-
-            # If we get here, district wasn't found
-            raise DistrictNotFoundException
-
     except httpx.HTTPStatusError as err:
         if err.response.status_code == 404:
             return
         else:
             raise
+
+    with pdfplumber.open(pdf_reader) as pdf:
+        page_numbers = [int(p) for p in pages.split(",")]
+        for page_num in page_numbers:
+            page = pdf.pages[page_num - 1]
+            tables = page.extract_tables()
+
+            for table in tables:
+                for row_idx, row in enumerate(table):
+                    if district in row:
+                        yield from _parse_dates(row)
+                        yield from _parse_dates(table[row_idx + 1])
+                        return  # Found our district, we're done
+
+        # If we get here, district wasn't found
+        raise DistrictNotFoundException
 
 
 if __name__ == "__main__":  # pragma: no cover
