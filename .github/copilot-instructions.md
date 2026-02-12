@@ -33,10 +33,12 @@ FastAPI service that extracts waste collection dates from PDF schedules and expo
 # In _parse_dates(): strips day names, keeps last 8 chars (dd.mm.yy format)
 if len(col) > DATE_LENGTH:
     col = col[-DATE_LENGTH:]
-yield parse(col, dayfirst=True).isoformat()
+yield parse(col, dayfirst=True)  # yields datetime objects, NOT strings
 ```
+- `get_dates()` yields `datetime` objects — FastAPI handles ISO-8601 serialization in the response
 
 ### Error Handling Specifics
+- `HealthCheckFilter` on `uvicorn.access` logger suppresses `/health` endpoint from access logs
 - `DistrictNotFoundException` raised when district not found in any table → converts to HTTP 404 in `main.py`
 - HTTP 404 from PDF URL returns empty list (graceful degradation in `get_dates()`)
 - Non-PDF URLs raise `ValueError` (checked via content-type header and `.pdf` extension)
@@ -53,6 +55,7 @@ yield parse(col, dayfirst=True).isoformat()
 - Tests use live PDF from production (chiemgau-recycling.de)
 - District names with special chars/numbers tested (e.g., "Bruckmühl 1", "Prien a. Chiemsee")
 - Main block in `blaue_tonne.py` marked with `# pragma: no cover` (manual testing only)
+- **CI httpbingo pattern**: `test_get_dates_invalid_content_type` uses local `httpbingo:8080` in CI vs public `httpbingo.org` locally, controlled via `CI` env var with `pytest.mark.skipif`
 
 **Run tests:**
 ```bash
@@ -90,9 +93,23 @@ uv sync          # Re-sync after version change
 ## Code Style & Conventions
 
 - **Ruff**: 120 char line length (`pyproject.toml`)
-- **pytest config**: `addopts = "-n auto -v --tb=short"` (parallel execution by default)
+- **pytest config**: `addopts = "-n auto --tb=short"` (parallel execution by default, pass `-v` manually for verbose)
 - **Type hints**: Used on function signatures (e.g., `get_dates(url: str, pages: str, district: str)`)
 - **Generator pattern**: `_parse_dates()` and `get_dates()` yield results for memory efficiency
+
+## Pylance MCP Server
+
+Use the Pylance MCP server tools for code quality tasks instead of manual approaches:
+
+- **Syntax checking**: Use `pylanceFileSyntaxErrors` to validate Python files or `pylanceSyntaxErrors` to check code snippets before writing them to disk.
+- **Refactoring**: Use `pylanceInvokeRefactoring` with these refactoring actions:
+  - `source.unusedImports` — Remove unused imports from Python files
+  - `source.convertImportFormat` — Normalize import style (absolute/relative) per workspace settings
+  - `source.addTypeAnnotation` — Add inferred type annotations to unannotated variables and functions
+  - `source.fixAll.pylance` — Apply all available automatic code fixes at once
+- **Running Python snippets**: Use `pylanceRunCodeSnippet` instead of terminal commands to avoid shell escaping issues.
+
+Prefer these tools over raw terminal commands (`ruff check`, `python -c`) for in-editor validation and refactoring workflows.
 
 ## Gotchas & Edge Cases
 
@@ -105,3 +122,6 @@ uv sync          # Re-sync after version change
 7. **Main block excluded from coverage** - `if __name__ == "__main__":` block in `blaue_tonne.py` marked `# pragma: no cover`
 8. **GitLab CI uses uv** - `.gitlab-ci.yml` installs uv via curl script, runs `uv sync --locked` before tests
 9. **Docker uses multi-stage build** - builder stage runs `uv sync --no-dev --no-install-project`, final stage copies `.venv` and `app/` only
+10. **Docker runs as non-root** - creates `fastapi` user/group, `HEALTHCHECK` uses httpx to ping `/health`
+11. **Docker CMD uses proxy headers** - `--proxy-headers --forwarded-allow-ips 172.17.0.1` for reverse proxy setups
+12. **Source hosted on GitLab** - `gitlab.stkn.org/felix/blaue_tonne_api`, CI pipeline in `.gitlab-ci.yml`
