@@ -1,4 +1,7 @@
 import os
+from unittest.mock import patch
+
+import httpx
 import pytest
 
 from app.blaue_tonne import DistrictNotFoundException, get_dates
@@ -127,3 +130,14 @@ def test_get_dates_invalid_content_type(url):
             )
         )
     assert "URL does not point to a valid PDF file" in str(e.value)
+
+
+def test_get_dates_non_404_http_error():
+    """Test that non-404 HTTP errors are re-raised."""
+    response = httpx.Response(500, request=httpx.Request("GET", "https://example.com/test.pdf"))
+    with patch(
+        "app.blaue_tonne._download_pdf",
+        side_effect=httpx.HTTPStatusError("Server Error", request=response.request, response=response),
+    ):
+        with pytest.raises(httpx.HTTPStatusError):
+            list(get_dates("https://example.com/test.pdf", "1", "Test District"))
