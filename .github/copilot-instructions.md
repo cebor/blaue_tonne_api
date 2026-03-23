@@ -52,10 +52,11 @@ yield parse(col, dayfirst=True)  # yields datetime objects, NOT strings
 
 **Key testing patterns:**
 - `@pytest.fixture(autouse=True)` clears cache before/after each test for isolation
-- Tests use live PDF from production (chiemgau-recycling.de)
+- Tests use live PDF from production (chiemgau-recycling.de) — network required
 - District names with special chars/numbers tested (e.g., "Bruckmühl 1", "Prien a. Chiemsee")
 - Main block in `blaue_tonne.py` marked with `# pragma: no cover` (manual testing only)
 - **CI httpbingo pattern**: `test_get_dates_invalid_content_type` uses local `httpbingo:8080` in CI vs public `httpbingo.org` locally, controlled via `CI` env var with `pytest.mark.skipif`
+- **Mocking pattern**: `unittest.mock.patch` used to mock `_download_pdf` for testing non-404 HTTP error re-raising (avoids needing a real server that returns 500)
 
 **Run tests:**
 ```bash
@@ -96,6 +97,7 @@ uv sync          # Re-sync after version change
 - **pytest config**: `addopts = "-n auto --tb=short"` (parallel execution by default, pass `-v` manually for verbose)
 - **Type hints**: Used on function signatures (e.g., `get_dates(url: str, pages: str, district: str)`)
 - **Generator pattern**: `_parse_dates()` and `get_dates()` yield results for memory efficiency
+- **Commit conventions**: See `CONTRIBUTING.md` — conventional commits (`feat:`, `fix:`, `test:`, etc.), imperative mood, max 50 chars
 
 ## Pylance MCP Server
 
@@ -125,3 +127,5 @@ Prefer these tools over raw terminal commands (`ruff check`, `python -c`) for in
 10. **Docker runs as non-root** - creates `fastapi` user/group, `HEALTHCHECK` uses httpx to ping `/health`
 11. **Docker CMD uses proxy headers** - `--proxy-headers --forwarded-allow-ips 172.17.0.1` for reverse proxy setups
 12. **Source hosted on GitLab** - `gitlab.stkn.org/felix/blaue_tonne_api`, CI pipeline in `.gitlab-ci.yml`
+13. **Production deployment** - `blauetonne.stkn.org`, container runs on port 8245:80, manual deploy trigger in CI pipeline
+14. **CI includes security scanning** - SAST, Container Scanning, IaC, Secret Detection via GitLab templates
