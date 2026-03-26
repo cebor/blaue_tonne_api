@@ -23,7 +23,7 @@ FastAPI service that extracts waste collection dates from PDF schedules and expo
 
 ### PDF Processing & Caching Strategy
 - **Two-level cache**: `PDF_CACHE` (module dict in `blaue_tonne.py`) stores `BufferedReader` objects keyed by URL; `cache[LANDKREIS]` (module dict in `main.py`) stores `district → dates` mappings
-- PDF download wrapping: `httpx.get()` → `BytesIO(response.content)` → `BufferedReader()` for pdfplumber reusability across requests
+- PDF download wrapping: `niquests.get()` → `BytesIO(response.content)` → `BufferedReader()` for pdfplumber reusability across requests
 - **No cache invalidation** - restart service to refresh data (intentional design, no TTL or manual clear endpoints)
 - District matching: simple substring `if district in row:` on table rows - **exact string match required** including spaces, umlauts, numbers
 - Date extraction pattern: finds district row, extracts dates from **both current row and next row** (`table[row_idx + 1]`), then returns immediately
@@ -59,6 +59,8 @@ yield parse(col, dayfirst=True)  # yields datetime objects, NOT strings
 - **Mocking pattern**: `unittest.mock.patch` used to mock `_download_pdf` for testing non-404 HTTP error re-raising (avoids needing a real server that returns 500)
 
 **Run tests:**
+
+Prefer using the IDE's built-in test runner (e.g., VS Code's test tools) over terminal commands. Fall back to terminal only when IDE tools are unavailable:
 ```bash
 uv run pytest                      # All tests with xdist parallel execution (-n auto)
 uv run pytest tests/test_api.py -v # Specific file, verbose output
@@ -67,6 +69,9 @@ uv run pytest --cov --cov-report=html  # HTML coverage in htmlcov/
 ```
 
 ## Development Workflow
+
+**Dependency management:**
+Always use `uv` to add or remove dependencies. Do not edit `pyproject.toml` or `uv.lock` manually, and do not use other tools like `pip`, `pip-tools`, or `poetry` directly. This ensures the lockfile and dependency graph stay consistent and reproducible.
 
 **Local dev (uv + Python 3.14+):**
 ```bash
@@ -124,7 +129,7 @@ Prefer these tools over raw terminal commands (`ruff check`, `python -c`) for in
 7. **Main block excluded from coverage** - `if __name__ == "__main__":` block in `blaue_tonne.py` marked `# pragma: no cover`
 8. **GitLab CI uses uv** - `.gitlab-ci.yml` installs uv via curl script, runs `uv sync --locked` before tests
 9. **Docker uses multi-stage build** - builder stage runs `uv sync --no-dev --no-install-project`, final stage copies `.venv` and `app/` only
-10. **Docker runs as non-root** - creates `fastapi` user/group, `HEALTHCHECK` uses httpx to ping `/health`
+10. **Docker runs as non-root** - creates `fastapi` user/group, `HEALTHCHECK` uses niquests to ping `/health`
 11. **Docker CMD uses proxy headers** - `--proxy-headers --forwarded-allow-ips 172.17.0.1` for reverse proxy setups
 12. **Source hosted on GitLab** - `gitlab.stkn.org/felix/blaue_tonne_api`, CI pipeline in `.gitlab-ci.yml`
 13. **Production deployment** - `blauetonne.stkn.org`, container runs on port 8245:80, manual deploy trigger in CI pipeline
