@@ -69,7 +69,7 @@ def test_get_dates_district_found(district):
     for plan in PLANS:
         dates = list(get_dates(plan["url"], plan["pages"], district))
         # TODO: Add actual date assertions once we have test data
-        assert len(dates) >= 0  # Replace with actual date checks
+        assert len(dates) >= 1  # Replace with actual date checks
 
 
 def test_get_dates_district_not_found():
