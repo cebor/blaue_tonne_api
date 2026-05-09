@@ -5,7 +5,7 @@ from pathlib import Path
 import yaml
 from fastapi import FastAPI, HTTPException
 
-from app.blaue_tonne import DistrictNotFoundException, get_dates
+from app.blaue_tonne import DistrictNotFoundException, ServiceUnavailableError, get_dates
 
 
 # Filter out health check requests from access logs
@@ -77,6 +77,8 @@ async def blaue_tonne_dates(district: str) -> list[datetime]:
             dates.extend(list(get_dates(plan["url"], plan["pages"], district)))
         except DistrictNotFoundException:
             raise HTTPException(status_code=404, detail="District not found")
+        except ServiceUnavailableError:
+            raise HTTPException(status_code=504, detail="Service temporarily unavailable")
 
     cache[LANDKREIS][district] = dates
     return cache[LANDKREIS][district]

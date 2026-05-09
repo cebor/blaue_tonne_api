@@ -12,6 +12,10 @@ class DistrictNotFoundException(Exception):
     pass
 
 
+class ServiceUnavailableError(Exception):
+    pass
+
+
 PDF_CACHE = {}
 
 
@@ -23,7 +27,7 @@ def _download_pdf(url: str) -> BufferedReader:
     if not url.lower().endswith(".pdf"):
         raise ValueError("URL must point to a PDF file")
 
-    response = niquests.get(url)
+    response = niquests.get(url, timeout=30)
     response.raise_for_status()
     if response.headers.get("content-type", "").lower() != "application/pdf":
         raise ValueError("URL does not point to a valid PDF file")
@@ -56,6 +60,8 @@ def get_dates(url: str, pages: str, district: str):
             return
         else:
             raise
+    except niquests.Timeout:
+        raise ServiceUnavailableError("Service temporarily unavailable")
 
     with pdfplumber.open(pdf_reader) as pdf:
         page_numbers = [int(p) for p in pages.split(",")]
