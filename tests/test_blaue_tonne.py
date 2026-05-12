@@ -1,10 +1,9 @@
-import os
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import niquests
 import pytest
 
-from app.blaue_tonne import DistrictNotFoundException, get_dates
+from app.blaue_tonne import PDF_CACHE, DistrictNotFoundException, _download_pdf, get_dates
 from app.main import PLANS
 
 DISTRICTS = [
@@ -60,19 +59,23 @@ DISTRICTS = [
     "Vogtareuth",
 ]
 
-CI = bool(os.getenv("CI"))
+@pytest.fixture(autouse=True)
+def clear_pdf_cache():
+    """Clear the PDF cache before and after each test for isolation."""
+    PDF_CACHE.clear()
+    yield
+    PDF_CACHE.clear()
 
 
 @pytest.mark.parametrize("district", DISTRICTS)
-def test_get_dates_district_found(district):
+def test_get_dates_district_found(district, mock_download_pdf):
     """Test that all known districts can be found in the PDF schedules."""
     for plan in PLANS:
         dates = list(get_dates(plan["url"], plan["pages"], district))
-        # TODO: Add actual date assertions once we have test data
-        assert len(dates) >= 1  # Replace with actual date checks
+        assert len(dates) >= 1
 
 
-def test_get_dates_district_not_found():
+def test_get_dates_district_not_found(mock_download_pdf):
     """Test that DistrictNotFoundException is raised for non-existent districts."""
     with pytest.raises(DistrictNotFoundException):
         list(get_dates(PLANS[0]["url"], PLANS[0]["pages"], "NonexistentDistrict"))
@@ -80,14 +83,20 @@ def test_get_dates_district_not_found():
 
 def test_get_dates_404():
     """Test that a 404 PDF URL returns an empty list (graceful degradation)."""
-    result = list(
-        get_dates(
-            "https://chiemgau-recycling.de/404.pdf",
-            "1",
-            "Test District",
-        )
-    )
-    assert result == []  # Should return empty list for 404
+    response = niquests.Response()
+    response.status_code = 404
+    request = niquests.PreparedRequest()
+    request.prepare_method("GET")
+    request.prepare_url("https://example.com/404.pdf", None)
+    response.request = request
+    response.url = "https://example.com/404.pdf"
+
+    with patch(
+        "app.blaue_tonne._download_pdf",
+        side_effect=niquests.HTTPError(response=response),
+    ):
+        result = list(get_dates("https://example.com/404.pdf", "1", "Test District"))
+    assert result == []
 
 
 def test_get_dates_invalid_url():
@@ -95,7 +104,7 @@ def test_get_dates_invalid_url():
     with pytest.raises(ValueError) as e:
         list(
             get_dates(
-                "https://chiemgau-recycling.de/invalid",
+                "https://example.com/invalid",
                 "1",
                 "Test District",
             )
@@ -103,32 +112,16 @@ def test_get_dates_invalid_url():
     assert "URL must point to a PDF file" in str(e.value)
 
 
-@pytest.mark.parametrize(
-    "url",
-    [
-        pytest.param(
-            "http://httpbingo:8080/anything/not_a_pdf.pdf",
-            marks=pytest.mark.skipif(not CI, reason="Skipped locally - local httpbingo instance not available"),
-        ),
-        pytest.param(
-            "http://httpbingo.org/anything/not_a_pdf.pdf",
-            marks=pytest.mark.skipif(CI, reason="Skipped in CI - using local httpbingo instance instead"),
-        ),
-    ],
-)
-def test_get_dates_invalid_content_type(url):
-    """Test that ValueError is raised when content-type is not application/pdf.
+def test_get_dates_invalid_content_type():
+    """Test that ValueError is raised when content-type is not application/pdf."""
+    mock_response = MagicMock(spec=niquests.Response)
+    mock_response.headers = {"content-type": "text/html"}
+    mock_response.status_code = 200
+    mock_response.content = b"<html>not a pdf</html>"
 
-    Note: In CI, this test uses a local httpbin instance for faster/more reliable testing.
-    """
-    with pytest.raises(ValueError) as e:
-        list(
-            get_dates(
-                url,
-                "1",
-                "Test District",
-            )
-        )
+    with patch("niquests.get", return_value=mock_response):
+        with pytest.raises(ValueError) as e:
+            list(get_dates("https://example.com/not_a_pdf.pdf", "1", "Test District"))
     assert "URL does not point to a valid PDF file" in str(e.value)
 
 
@@ -147,3 +140,28 @@ def test_get_dates_non_404_http_error():
     ):
         with pytest.raises(niquests.HTTPError):
             list(get_dates("https://example.com/test.pdf", "1", "Test District"))
+
+
+def test_download_pdf_cache_hit(pdf_bytes):
+    """Test that _download_pdf returns the cached reader on the second call without re-downloading."""
+    url = "https://example.com/test.pdf"
+
+    mock_response = MagicMock(spec=niquests.Response)
+    mock_response.headers = {"content-type": "application/pdf"}
+    mock_response.status_code = 200
+    mock_response.content = pdf_bytes
+
+    with patch("niquests.get", return_value=mock_response) as mock_get:
+        first = _download_pdf(url)
+        second = _download_pdf(url)
+
+    assert mock_get.call_count == 1
+    assert first is second
+    assert url in PDF_CACHE
+
+
+@pytest.mark.network
+def test_live_smoke():
+    """Smoke test against the real PDF URL – requires network access."""
+    dates = list(get_dates(PLANS[0]["url"], PLANS[0]["pages"], "Kolbermoor"))
+    assert len(dates) >= 1
