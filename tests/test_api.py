@@ -1,7 +1,21 @@
+from datetime import datetime
+from unittest.mock import patch
+
 import pytest
 from fastapi.testclient import TestClient
 
+from app.blaue_tonne import DistrictNotFoundException
 from app.main import app, cache, LANDKREIS
+
+FAKE_DATES = {
+    "Kolbermoor": [datetime(2026, 1, 15), datetime(2026, 2, 15)],
+    "Bad Aibling": [datetime(2026, 1, 20), datetime(2026, 2, 20)],
+    "Prien a. Chiemsee": [datetime(2026, 1, 25), datetime(2026, 2, 25)],
+    "Aschau": [datetime(2026, 1, 10)],
+    "Bruckmühl 1": [datetime(2026, 1, 11)],
+    "Feldkirchen 2": [datetime(2026, 1, 12)],
+    "Raubling 3": [datetime(2026, 1, 13)],
+}
 
 
 @pytest.fixture(autouse=True)
@@ -10,6 +24,19 @@ def clear_cache():
     cache[LANDKREIS].clear()
     yield
     cache[LANDKREIS].clear()
+
+
+@pytest.fixture()
+def mock_get_dates():
+    """Patch get_dates in app.main to avoid real PDF downloads in API tests."""
+
+    def _get_dates(url, pages, district):
+        if district not in FAKE_DATES:
+            raise DistrictNotFoundException
+        yield from FAKE_DATES[district]
+
+    with patch("app.main.get_dates", side_effect=_get_dates) as mock:
+        yield mock
 
 
 @pytest.fixture
@@ -42,7 +69,7 @@ def test_health_check_filtered_from_logs(client, caplog):
             assert "/health" not in record.getMessage()
 
 
-def test_get_dates_for_valid_district(client):
+def test_get_dates_for_valid_district(client, mock_get_dates):
     """Test retrieving waste collection dates for a valid district."""
     response = client.get("/lk_rosenheim?district=Kolbermoor")
     assert response.status_code == 200
@@ -59,35 +86,49 @@ def test_get_dates_for_valid_district(client):
         assert date[4] == "-" and date[7] == "-"
 
 
-def test_get_dates_for_invalid_district(client):
+def test_get_dates_for_invalid_district(client, mock_get_dates):
     """Test that requesting an invalid district returns 404."""
     response = client.get("/lk_rosenheim?district=NonExistentDistrict")
     assert response.status_code == 404
     assert response.json()["detail"] == "District not found"
 
 
-def test_cache_functionality(client):
+def test_get_dates_service_unavailable(client):
+    """Test that ServiceUnavailableError returns 504."""
+    from app.blaue_tonne import ServiceUnavailableError
+
+    def _get_dates(url, pages, district):
+        raise ServiceUnavailableError("Service temporarily unavailable")
+
+    with patch("app.main.get_dates", side_effect=_get_dates):
+        response = client.get("/lk_rosenheim?district=Kolbermoor")
+        assert response.status_code == 504
+        assert response.json()["detail"] == "Service temporarily unavailable"
+
+
+def test_cache_functionality(client, mock_get_dates):
     """Test that the in-memory cache works correctly."""
     district = "Bad Aibling"
 
-    # First request should hit the PDF and cache the result
+    # First request should call get_dates and cache the result
     response1 = client.get(f"/lk_rosenheim?district={district}")
     assert response1.status_code == 200
     dates1 = response1.json()
 
     # Verify the district is now in cache
     assert district in cache[LANDKREIS]
-    # Cache stores datetime objects, convert to ISO strings for comparison
     cached_dates = [dt.isoformat() for dt in cache[LANDKREIS][district]]
     assert cached_dates == dates1
 
-    # Second request should return the same cached data
+    call_count_after_first = mock_get_dates.call_count
+
+    # Second request should use the cache and NOT call get_dates again
     response2 = client.get(f"/lk_rosenheim?district={district}")
     assert response2.status_code == 200
     dates2 = response2.json()
 
-    # Both responses should be identical
     assert dates1 == dates2
+    assert mock_get_dates.call_count == call_count_after_first
 
 
 def test_missing_district_parameter(client):
@@ -96,26 +137,21 @@ def test_missing_district_parameter(client):
     assert response.status_code == 422  # FastAPI validation error
 
 
-def test_multiple_districts_use_separate_cache_entries(client):
+def test_multiple_districts_use_separate_cache_entries(client, mock_get_dates):
     """Test that different districts have separate cache entries."""
     district1 = "Kolbermoor"
     district2 = "Prien a. Chiemsee"
 
-    # Request for first district
     response1 = client.get(f"/lk_rosenheim?district={district1}")
     assert response1.status_code == 200
     dates1 = response1.json()
 
-    # Request for second district
     response2 = client.get(f"/lk_rosenheim?district={district2}")
     assert response2.status_code == 200
     dates2 = response2.json()
 
-    # Both should be in cache
     assert district1 in cache[LANDKREIS]
     assert district2 in cache[LANDKREIS]
-
-    # Dates should be different (different districts have different schedules)
     assert dates1 != dates2
 
 
@@ -125,10 +161,18 @@ def test_multiple_districts_use_separate_cache_entries(client):
     "Feldkirchen 2",
     "Raubling 3",
 ])
-def test_districts_with_numbers(client, district):
+def test_districts_with_numbers(client, mock_get_dates, district):
     """Test districts that have numbers in their names."""
     response = client.get(f"/lk_rosenheim?district={district}")
     assert response.status_code == 200
     dates = response.json()
     assert isinstance(dates, list)
     assert len(dates) > 0
+
+
+@pytest.mark.network
+def test_live_smoke(client):
+    """Smoke test against the real API – requires network access."""
+    response = client.get("/lk_rosenheim?district=Kolbermoor")
+    assert response.status_code == 200
+    assert len(response.json()) >= 1

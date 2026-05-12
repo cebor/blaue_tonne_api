@@ -26,7 +26,10 @@ line-length = 120
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-addopts = "-n auto --tb=short"
+addopts = "-n auto --tb=short -m 'not network'"
+markers = [
+    "network: Tests that require real network access to external services",
+]
 
 [tool.coverage.run]
 source = ["app"]

@@ -31,13 +31,13 @@ build:
     - docker push $IMAGE_TAG
   tags:
     - dind
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: on_success
 
 test:
   stage: test
   image: python:3.14
-  services:
-    - name: "mccutchen/go-httpbin"
-      alias: "httpbingo"
   before_script:
     - curl -LsSf https://astral.sh/uv/install.sh | env UV_UNMANAGED_INSTALL="/usr/bin" sh
     - uv sync --locked
@@ -98,4 +98,7 @@ validate_deployment:
     - sleep 10
     - curl -fsL blauetonne.stkn.org/health
   allow_failure: false
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: on_success
   needs: ["deploy"]
