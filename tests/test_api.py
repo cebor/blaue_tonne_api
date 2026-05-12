@@ -93,6 +93,19 @@ def test_get_dates_for_invalid_district(client, mock_get_dates):
     assert response.json()["detail"] == "District not found"
 
 
+def test_get_dates_service_unavailable(client):
+    """Test that ServiceUnavailableError returns 504."""
+    from app.blaue_tonne import ServiceUnavailableError
+
+    def _get_dates(url, pages, district):
+        raise ServiceUnavailableError("Service temporarily unavailable")
+
+    with patch("app.main.get_dates", side_effect=_get_dates):
+        response = client.get("/lk_rosenheim?district=Kolbermoor")
+        assert response.status_code == 504
+        assert response.json()["detail"] == "Service temporarily unavailable"
+
+
 def test_cache_functionality(client, mock_get_dates):
     """Test that the in-memory cache works correctly."""
     district = "Bad Aibling"

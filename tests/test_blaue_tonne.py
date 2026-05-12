@@ -99,6 +99,18 @@ def test_get_dates_404():
     assert result == []
 
 
+def test_get_dates_timeout():
+    """Test that a PDF download timeout raises ServiceUnavailableError."""
+    from app.blaue_tonne import ServiceUnavailableError
+
+    with patch(
+        "app.blaue_tonne._download_pdf",
+        side_effect=niquests.Timeout("Request timed out"),
+    ):
+        with pytest.raises(ServiceUnavailableError, match="Service temporarily unavailable"):
+            list(get_dates("https://example.com/slow.pdf", "1", "Test District"))
+
+
 def test_get_dates_invalid_url():
     """Test that ValueError is raised for non-PDF URLs."""
     with pytest.raises(ValueError) as e:
