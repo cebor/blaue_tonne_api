@@ -33,7 +33,8 @@ def _download_pdf(url: str) -> BufferedReader:
         raise ValueError("URL does not point to a valid PDF file")
 
     # Read the PDF into memory and wrap it in a BufferedReader
-    assert response.content is not None
+    if response.content is None:
+        raise ValueError("No content received from PDF URL")
     pdf_data = BytesIO(response.content)
     PDF_CACHE[url] = BufferedReader(pdf_data)
     return PDF_CACHE[url]
