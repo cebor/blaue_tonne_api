@@ -137,6 +137,19 @@ def test_get_dates_invalid_content_type():
     assert "URL does not point to a valid PDF file" in str(e.value)
 
 
+def test_download_pdf_none_content():
+    """Test that ValueError is raised when the response content is None."""
+    mock_response = MagicMock(spec=niquests.Response)
+    mock_response.headers = {"content-type": "application/pdf"}
+    mock_response.status_code = 200
+    mock_response.content = None
+
+    with patch("niquests.get", return_value=mock_response):
+        with pytest.raises(ValueError) as e:
+            list(get_dates("https://example.com/empty.pdf", "1", "Test District"))
+    assert "No content received from PDF URL" in str(e.value)
+
+
 def test_get_dates_non_404_http_error():
     """Test that non-404 HTTP errors are re-raised."""
     response = niquests.Response()
