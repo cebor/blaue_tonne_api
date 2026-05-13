@@ -11,7 +11,7 @@ from app.blaue_tonne import DistrictNotFoundException, ServiceUnavailableError, 
 # Filter out health check requests from access logs
 class HealthCheckFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
-        return "/health" not in record.getMessage()
+        return "/health" not in record.getMessage()  # pragma: no cover
 
 
 logging.getLogger("uvicorn.access").addFilter(HealthCheckFilter())
